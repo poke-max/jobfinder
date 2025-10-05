@@ -612,14 +612,15 @@ export default function JobFeed({ user, onLogout }) {
           </div>
         )}
 
+      </div>
+
         {/* Botón flotante de búsqueda - esquina superior derecha */}
         <button
           onClick={() => setShowSearch(true)}
-          className="fixed top-4 right-4 z-40 w-12 h-12 bg-primary hover:bg-primary-light text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+          className="fixed top-4 right-4 z-40 w-12 h-12 bg-white hover:bg-primary-light text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
         >
-          <FaSearch className="w-5 h-5" />
+          <FaSearch className="w-5 h-5 text-gray-400" />
         </button>
-      </div>
 
       <SideBar 
         activeTab={currentTab}

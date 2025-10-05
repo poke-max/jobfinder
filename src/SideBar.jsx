@@ -91,7 +91,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
                   isActive ? 'text-primary scale-110' : 'text-gray-400'
                 }`}
               >
-                <Icon className="w-7 h-7 mb-0" />
+                <Icon className="text-2xl mb-0" />
               </button>
             );
           })}
