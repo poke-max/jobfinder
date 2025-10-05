@@ -99,12 +99,12 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
       </div>
 
       {/* Hamburger Menu Button - Mobile */}
-      <button
+{/*       <button
         onClick={() => setIsOpen(!isOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-full shadow-lg text-gray-700"
       >
         {isOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
-      </button>
+      </button> */}
 
       {/* Slide Menu Mobile */}
       {isOpen && (

@@ -433,165 +433,153 @@ export default function JobFeed({ user, onLogout }) {
 
   return (
     <>
-      <div className="relative w-full h-screen items-center justify-center bg-bg overflow-hidden ">
-        {/* Swiper Container - Ocupa toda la pantalla */}
-        <Swiper
-          direction="vertical"
-          slidesPerView={1}
-          mousewheel={true}
-          keyboard={{
-            enabled: true,
-          }}
-          onSlideChange={handleSlideChange}
-          onSwiper={(swiper) => (swiperRef.current = swiper)}
-          modules={[Mousewheel, Keyboard]}
-          className="w-full h-full"
-          /* speed={100} */
-          resistance={true}
-          resistanceRatio={0.85}
-          enabled={!showMap && !showChat} 
-        >
-          {jobs.map((job, index) => {
-            const isSavedJob = savedJobs.has(job.id);
-            const justSavedJob = jobStates[job.id]?.justSaved;
-            
-            return (
-              <SwiperSlide key={job.id}>
-                <div className="flex flex-col items-center justify-center h-full p-2">
-                    <>
-                      <JobCard
-                        job={job}
-                        isSaved={isSavedJob}
-                        justSaved={justSavedJob}
-                        showDetails={showDetails[job.id]}
-                        onToggleDetails={() =>
-                          setShowDetails(prev => ({ ...prev, [job.id]: !prev[job.id] }))
-                        }
-                        onDismiss={() => handleDismiss(job.id)}
-                        onSave={() => handleSave(job.id)}
-                      />
+<div className="relative w-full h-screen bg-bg overflow-hidden">
+  {/* Swiper Container - Ocupa toda la pantalla */}
+  <Swiper
+    direction="vertical"
+    slidesPerView={1}
+    mousewheel={true}
+    keyboard={{
+      enabled: true,
+    }}
+    onSlideChange={handleSlideChange}
+    onSwiper={(swiper) => (swiperRef.current = swiper)}
+    modules={[Mousewheel, Keyboard]}
+    className="w-full h-full"
+    /* speed={100} */
+    resistance={true}
+    resistanceRatio={0.85}
+    enabled={!showMap && !showChat} 
+  >
+    {jobs.map((job, index) => {
+      const isSavedJob = savedJobs.has(job.id);
+      const justSavedJob = jobStates[job.id]?.justSaved;
+      
+      return (
+        <SwiperSlide key={job.id}>
+          <div className="flex flex-col items-center justify-center h-full p-2 pb-32">
+            <JobCard
+              job={job}
+              isSaved={isSavedJob}
+              justSaved={justSavedJob}
+              showDetails={showDetails[job.id]}
+              onToggleDetails={() =>
+                setShowDetails(prev => ({ ...prev, [job.id]: !prev[job.id] }))
+              }
+              onDismiss={() => handleDismiss(job.id)}
+              onSave={() => handleSave(job.id)}
+            />
+          </div>
+        </SwiperSlide>
+      );
+    })}
+  </Swiper>
 
-                      {/* Botones de acción */}
+  {/* Botones fijos - NO se mueven con el swipe */}
+  <div className="fixed bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-40 pointer-events-none">
+    <button
+      onClick={() => handleSave(currentJob.id)}
+      className={`w-14 h-14 rounded-full flex items-center justify-center transition shadow-lg focus:outline-none border-none pointer-events-auto ${
+        isSaved
+          ? 'bg-teal-400 hover:bg-teal-500 text-white'
+          : 'bg-white text-teal-400 hover:bg-teal-50'
+      }`}
+    >
+      <FaStar className="text-2xl" />
+    </button>
 
-                    </>
-                  
-                </div>
-              </SwiperSlide>
-            );
-          })}
-        </Swiper>
+    <button
+      onClick={openChat}
+      className="w-14 h-14 bg-white rounded-full text-purple-400 hover:bg-purple-50 flex items-center justify-center transition shadow-lg pointer-events-auto"
+    >
+      <FaComments className="text-2xl" />
+    </button>
 
-        <div className="flex items-center justify-center gap-4 pb-20">
-          <div className="fixed bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-40">
-          <button
-            onClick={() => handleSave(currentJob.id)}
-            className={`w-14 h-14 bg-white rounded-full flex items-center justify-center transition shadow-lg focus:outline-none border-none ${
-              isSaved
-                ? 'bg-teal-400 hover:bg-teal-400 text-white'
-                : 'bg-transparent text-teal-400 hover:bg-teal-100/10'
-            }`}
-          >
-            <FaStar className="text-2xl" />
-          </button>
+    <button
+      onClick={() => setShowMap(true)}
+      className="w-14 h-14 bg-white rounded-full text-blue-400 hover:bg-blue-50 flex items-center justify-center transition shadow-lg pointer-events-auto"
+    >
+      <FaLocationArrow className="text-2xl" />
+    </button>
+  </div>
 
-          <button
-            onClick={openChat}
-            className="w-14 h-14 bg-white rounded-full text-purple-400 hover:bg-purple-100/10 flex items-center justify-center transition shadow-lg"
-          >
-            <FaComments className="text-2xl" />
-          </button>
+  {/* Botón flotante de búsqueda */}
+  <button
+    onClick={() => setShowSearch(true)}
+    className="fixed top-4 right-4 z-50 w-12 h-12 bg-white hover:bg-gray-50 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+  >
+    <FaSearch className="w-5 h-5 text-gray-400" />
+  </button>
 
-          <button
-            onClick={() => setShowMap(true)}
-            className="w-14 h-14 bg-white rounded-full text-blue-400 hover:bg-blue-100/10 flex items-center justify-center transition shadow-lg"
-          >
-            <FaLocationArrow className="text-2xl" />
-          </button>
-      </div>
-        </div>
+  {/* Modales */}
+  {showSearch && (
+    <JobSearch 
+      user={user} 
+      mode="search" 
+      onClose={() => {
+        setShowSearch(false);
+        setCurrentTab('inicio');
+      }} 
+    />
+  )}
 
-        {/* Botón flotante de búsqueda */}
-        <button
-          onClick={() => setShowSearch(true)}
-          className="fixed top-4 right-4 z-50 w-12 h-12 bg-white hover:bg-primary-light text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
-        >
-          <FaSearch className="w-5 h-5 text-gray-400" />
-        </button>
+  {showFavorites && (
+    <JobSearch 
+      user={user} 
+      mode="favorites" 
+      onClose={() => {
+        setShowFavorites(false);
+        setCurrentTab('inicio');
+      }} 
+    />
+  )}
 
-        {/* Modales */}
-        {showSearch && (
-          <JobSearch 
-            user={user} 
-            mode="search" 
-            onClose={() => {
-              setShowSearch(false);
-              setCurrentTab('inicio');
-            }} 
-          />
-        )}
+  {showPublished && (
+    <JobSearch 
+      user={user} 
+      mode="published" 
+      onClose={() => {
+        setShowPublished(false);
+        setCurrentTab('inicio');
+      }} 
+    />
+  )}
 
-        {showFavorites && (
-          <JobSearch 
-            user={user} 
-            mode="favorites" 
-            onClose={() => {
-              setShowFavorites(false);
-              setCurrentTab('inicio');
-            }} 
-          />
-        )}
+  {showGeneralMap && (
+    <MapboxComponent 
+      onClose={() => {
+        setShowGeneralMap(false);
+        setCurrentTab('inicio');
+      }}
+    />
+  )}
 
-        {showPublished && (
-          <JobSearch 
-            user={user} 
-            mode="published" 
-            onClose={() => {
-              setShowPublished(false);
-              setCurrentTab('inicio');
-            }} 
-          />
-        )}
+  {showPublish && (
+    <PublishComponent 
+      userId={userId}
+      onClose={() => {
+        setShowPublish(false);
+        setCurrentTab('inicio');
+      }}
+      onSuccess={() => {
+        loadJobs();
+      }}
+    />
+  )}
 
-        {showGeneralMap && (
-          <MapboxComponent 
-            onClose={() => {
-              setShowGeneralMap(false);
-              setCurrentTab('inicio');
-            }}
-          />
-        )}
-
-        {showPublish && (
-          <PublishComponent 
-            userId={userId}
-            onClose={() => {
-              setShowPublish(false);
-              setCurrentTab('inicio');
-            }}
-            onSuccess={() => {
-              loadJobs();
-            }}
-          />
-        )}
-
-        {showMap && (
-          <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
-        )}
-        
-        {showChat && (
-          <JobChatView job={currentJob} onClose={() => setShowChat(false)} />
-        )}
-     
-        
-
-        </div>
+  {showMap && (
+    <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
+  )}
+  
+  {showChat && (
+    <JobChatView job={currentJob} onClose={() => setShowChat(false)} />
+  )}
+</div>
 
       <SideBar 
         activeTab={currentTab}
         onTabChange={handleTabChange}
       />
-
-
     </>
   );
 }
