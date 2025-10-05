@@ -18,7 +18,7 @@ export default function JobCard({
     <img 
       src={job.url} 
       alt={job.title || 'Imagen del trabajo'} 
-      className="absolute inset-0 w-full h-full object-contain"
+      className="absolute inset-0 w-full h-full object-cover"
       onError={(e) => {
         e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"%3E%3Crect fill="%234299e1" width="400" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="60" fill="white"%3E📋%3C/text%3E%3C/svg%3E';
       }}

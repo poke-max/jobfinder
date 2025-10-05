@@ -477,16 +477,6 @@ export default function JobFeed({ user, onLogout }) {
 
   {/* Botones fijos - NO se mueven con el swipe */}
   <div className="fixed bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-40 pointer-events-none">
-    <button
-      onClick={() => handleSave(currentJob.id)}
-      className={`w-14 h-14 rounded-full flex items-center justify-center transition shadow-lg focus:outline-none border-none pointer-events-auto ${
-        isSaved
-          ? 'bg-teal-400 hover:bg-teal-500 text-white'
-          : 'bg-white text-teal-400 hover:bg-teal-50'
-      }`}
-    >
-      <FaStar className="text-2xl" />
-    </button>
 
     <button
       onClick={openChat}
@@ -494,6 +484,17 @@ export default function JobFeed({ user, onLogout }) {
     >
       <FaComments className="text-2xl" />
     </button>
+
+<button
+  onClick={() => handleSave(currentJob.id)}
+  className={`w-16 h-16 rounded-full flex items-center justify-center transition shadow-lg focus:outline-none border-none pointer-events-auto ${
+    isSaved
+      ? 'bg-teal-400 hover:bg-teal-500 text-white'
+      : 'bg-white text-teal-400 hover:bg-teal-50'
+  } ${justSaved ? 'bounce-custom' : ''}`}
+>
+  <FaStar className="text-2xl" />
+</button>
 
     <button
       onClick={() => setShowMap(true)}
