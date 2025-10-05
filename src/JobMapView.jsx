@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaMapPin, FaUndo, FaLocationArrow } from 'react-icons/fa';
-
+import { useAnimatedClose } from './hooks/useAnimatedClose';
 // Cargar el CSS de Mapbox (solo una vez)
 if (!document.querySelector('link[href*="mapbox-gl.css"]')) {
   const mapboxCSS = document.createElement('link');
@@ -21,6 +21,8 @@ export default function JobMapView({ job, onClose }) {
   const mapInstanceRef = useRef(null);
   const userMarkerRef = useRef(null);
   const [isLocating, setIsLocating] = useState(false);
+  const { handleClose, getAnimationClass } = useAnimatedClose(onClose);
+  
 
   // Inicializar mapa cuando se monta el componente
   useEffect(() => {
@@ -111,8 +113,8 @@ export default function JobMapView({ job, onClose }) {
   };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center p-4 z-40">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full h-[85vh] overflow-hidden relative flex flex-col">
+    <div className={`absolute inset-0 flex items-center justify-center p-2 z-40 ${getAnimationClass()}`}>
+      <div className="bg-white overflow-hidden modal-card flex flex-col">
         {/* Contenedor del Mapa */}
         <div className="flex-1 relative">
           {job.ubication && job.ubication.lat && job.ubication.lng ? (
@@ -142,7 +144,7 @@ export default function JobMapView({ job, onClose }) {
           
           {/* Botón de cerrar */}
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-full shadow-lg hover:bg-white transition flex items-center gap-2 z-10"
           >
             <FaUndo className="w-4 h-4" />

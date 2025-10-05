@@ -151,7 +151,7 @@ export default function JobFeed({ user, onLogout }) {
         clearTimeout(viewTimerRef.current);
       }
     };
-  }, [currentIndex, jobs, userId]);
+  }, [currentIndex, userId]); 
 
   // Marcar como visto
   const markAsViewed = async (jobId) => {
@@ -352,13 +352,20 @@ export default function JobFeed({ user, onLogout }) {
   };
 
   // Handler cuando cambia el slide
+  const loadJobsDebounced = useRef(null);
+
   const handleSlideChange = (swiper) => {
     const newIndex = swiper.activeIndex;
     setCurrentIndex(newIndex);
     
-    // Cargar más trabajos si estamos cerca del final
+    // Cargar más trabajos con debounce
     if (newIndex >= jobs.length - 2) {
-      loadJobs();
+      if (loadJobsDebounced.current) {
+        clearTimeout(loadJobsDebounced.current);
+      }
+      loadJobsDebounced.current = setTimeout(() => {
+        loadJobs();
+      }, 300);
     }
   };
 
@@ -426,7 +433,7 @@ export default function JobFeed({ user, onLogout }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-bg overflow-hidden pb-20">
+      <div className="relative w-full h-screen items-center justify-center bg-bg overflow-hidden ">
         {/* Swiper Container - Ocupa toda la pantalla */}
         <Swiper
           direction="vertical"
@@ -450,13 +457,7 @@ export default function JobFeed({ user, onLogout }) {
             
             return (
               <SwiperSlide key={job.id}>
-                <div className="flex flex-col items-center justify-center h-full p-4 pt-20">
-                  {/* Vista de Mapa / Chat / Tarjeta */}
-                  {showMap && index === currentIndex ? (
-                    <JobMapView job={job} onClose={() => setShowMap(false)} />
-                  ) : showChat && index === currentIndex ? (
-                    <JobChatView job={job} onClose={() => setShowChat(false)} />
-                  ) : (
+                <div className="flex flex-col items-center justify-center h-full p-2">
                     <>
                       <JobCard
                         job={job}
@@ -470,14 +471,44 @@ export default function JobFeed({ user, onLogout }) {
                         onSave={() => handleSave(job.id)}
                       />
 
+                      {/* Botones de acción */}
 
                     </>
-                  )}
+                  
                 </div>
               </SwiperSlide>
             );
           })}
         </Swiper>
+
+        <div className="flex items-center justify-center gap-4 pb-20">
+          <div className="fixed bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-40">
+          <button
+            onClick={() => handleSave(currentJob.id)}
+            className={`w-14 h-14 bg-white rounded-full flex items-center justify-center transition shadow-lg focus:outline-none border-none ${
+              isSaved
+                ? 'bg-teal-400 hover:bg-teal-400 text-white'
+                : 'bg-transparent text-teal-400 hover:bg-teal-100/10'
+            }`}
+          >
+            <FaStar className="text-2xl" />
+          </button>
+
+          <button
+            onClick={openChat}
+            className="w-14 h-14 bg-white rounded-full text-purple-400 hover:bg-purple-100/10 flex items-center justify-center transition shadow-lg"
+          >
+            <FaComments className="text-2xl" />
+          </button>
+
+          <button
+            onClick={() => setShowMap(true)}
+            className="w-14 h-14 bg-white rounded-full text-blue-400 hover:bg-blue-100/10 flex items-center justify-center transition shadow-lg"
+          >
+            <FaLocationArrow className="text-2xl" />
+          </button>
+      </div>
+        </div>
 
         {/* Botón flotante de búsqueda */}
         <button
@@ -542,12 +573,25 @@ export default function JobFeed({ user, onLogout }) {
             }}
           />
         )}
-      </div>
+
+        {showMap && (
+          <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
+        )}
+        
+        {showChat && (
+          <JobChatView job={currentJob} onClose={() => setShowChat(false)} />
+        )}
+     
+        
+
+        </div>
 
       <SideBar 
         activeTab={currentTab}
         onTabChange={handleTabChange}
       />
+
+
     </>
   );
 }

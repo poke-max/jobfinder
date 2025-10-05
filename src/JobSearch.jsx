@@ -85,74 +85,74 @@ export default function JobSearch({
       setLoading(true);
       let jobsData = [];
 
-if (mode === 'favorites') {
-        // Cargar trabajos favoritos del usuario
-        const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (userDoc.exists()) {
-          const savedJobIds = userDoc.data().savedJobs || [];
-          
-          if (savedJobIds.length > 0) {
-            // Validar y filtrar IDs válidos
-            const validJobIds = savedJobIds.filter(id => 
-              id && typeof id === 'string' && id.trim().length > 0
-            );
+    if (mode === 'favorites') {
+            // Cargar trabajos favoritos del usuario
+            const userDocRef = doc(db, 'users', userId);
+            const userDoc = await getDoc(userDocRef);
             
-            if (validJobIds.length > 0) {
-              // Cargar cada trabajo guardado
-              const jobPromises = validJobIds.map(async (jobId) => {
-                try {
-                  const jobDocRef = doc(db, 'jobs', jobId);
-                  const jobDoc = await getDoc(jobDocRef);
-                  if (jobDoc.exists()) {
-                    return { id: jobDoc.id, ...jobDoc.data() };
-                  }
-                } catch (error) {
-                  console.error(`Error loading job ${jobId}:`, error);
-                }
-                return null;
-              });
+            if (userDoc.exists()) {
+              const savedJobIds = userDoc.data().savedJobs || [];
               
-              const jobsResults = await Promise.all(jobPromises);
-              jobsData = jobsResults.filter(job => job !== null);
+              if (savedJobIds.length > 0) {
+                // Validar y filtrar IDs válidos
+                const validJobIds = savedJobIds.filter(id => 
+                  id && typeof id === 'string' && id.trim().length > 0
+                );
+                
+                if (validJobIds.length > 0) {
+                  // Cargar cada trabajo guardado
+                  const jobPromises = validJobIds.map(async (jobId) => {
+                    try {
+                      const jobDocRef = doc(db, 'jobs', jobId);
+                      const jobDoc = await getDoc(jobDocRef);
+                      if (jobDoc.exists()) {
+                        return { id: jobDoc.id, ...jobDoc.data() };
+                      }
+                    } catch (error) {
+                      console.error(`Error loading job ${jobId}:`, error);
+                    }
+                    return null;
+                  });
+                  
+                  const jobsResults = await Promise.all(jobPromises);
+                  jobsData = jobsResults.filter(job => job !== null);
+                }
+              }
             }
+          } else if (mode === 'published') {
+            // Cargar trabajos publicados por el usuario
+            const jobsRef = collection(db, 'jobs');
+            const q = query(
+              jobsRef, 
+              where('publisherId', '==', userId),
+              orderBy('createdAt', 'desc')
+            );
+            const snapshot = await getDocs(q);
+            
+            jobsData = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+          } else {
+            // Modo búsqueda normal - cargar todos los trabajos
+            const jobsRef = collection(db, 'jobs');
+            const q = query(jobsRef, orderBy('createdAt', 'desc'));
+            const snapshot = await getDocs(q);
+            
+            jobsData = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
           }
+          
+          setJobs(jobsData);
+          setFilteredJobs(jobsData);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error loading jobs:', error);
+          setLoading(false);
         }
-      } else if (mode === 'published') {
-        // Cargar trabajos publicados por el usuario
-        const jobsRef = collection(db, 'jobs');
-        const q = query(
-          jobsRef, 
-          where('publisherId', '==', userId),
-          orderBy('createdAt', 'desc')
-        );
-        const snapshot = await getDocs(q);
-        
-        jobsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-      } else {
-        // Modo búsqueda normal - cargar todos los trabajos
-        const jobsRef = collection(db, 'jobs');
-        const q = query(jobsRef, orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        
-        jobsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-      }
-      
-      setJobs(jobsData);
-      setFilteredJobs(jobsData);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      setLoading(false);
-    }
-  };
+      };
 
   const applyFilters = () => {
     let filtered = [...jobs];
@@ -276,7 +276,7 @@ if (mode === 'favorites') {
   const IconComponent = config.icon;
 
   return (
-    <div className={`fixed inset-0 bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
+    <div className={`absolute inset-0 bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
       {/* Header */}
       <div className="sticky top-0 bg-bg border-b border-gray-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
@@ -498,7 +498,7 @@ if (mode === 'favorites') {
 
       {/* Bottom Action */}
       {filteredJobs.length > 0 && (
-        <div className="sticky bottom-0 p-4 bg-gradient-to-t from-bg via-bg to-transparent">
+        <div className="sticky bottom-14 p-4 bg-gradient-to-t from-bg via-bg to-transparent">
           <button
             onClick={onClose}
             className="w-full py-4 bg-primary hover:bg-primary-light text-white rounded-xl font-semibold transition shadow-lg"

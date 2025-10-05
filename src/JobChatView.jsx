@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaTimes, FaPaperPlane, FaRobot } from 'react-icons/fa';
+import { useAnimatedClose } from './hooks/useAnimatedClose';
 
 export default function JobChatView({ job, onClose }) {
   const [messages, setMessages] = useState([
@@ -14,7 +15,8 @@ export default function JobChatView({ job, onClose }) {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-
+  const { handleClose, getAnimationClass } = useAnimatedClose(onClose);
+  
   // Auto-scroll al último mensaje
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,10 +62,11 @@ export default function JobChatView({ job, onClose }) {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full h-[85vh] overflow-hidden flex flex-col animate-slideUp">
+    <div className={`fixed inset-0  flex items-center justify-center ${getAnimationClass()} z-50 px-2`}>
+      <div className="flex flex-col modal-card overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 shadow-lg">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 shadow-lg shrink-0">
+        <div className="flex items-center justify-between w-full px-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <FaRobot className="w-5 h-5" />
@@ -76,7 +79,7 @@ export default function JobChatView({ job, onClose }) {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition"
           >
             <FaTimes className="w-5 h-5" />
@@ -85,8 +88,8 @@ export default function JobChatView({ job, onClose }) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-100">
-        <div className="max-w-3xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-4 w-full px-4">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -129,40 +132,29 @@ export default function JobChatView({ job, onClose }) {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 p-4 shadow-lg">
-        <div className="max-w-3xl mx-auto flex gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Escribe tu pregunta..."
-            className="flex-1 px-4 py-3 bg-gray-100 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputText.trim()}
-            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition shadow-md"
-          >
-            <FaPaperPlane className="w-4 h-4" />
-          </button>
+      <div className="bg-white border-t border-gray-200 p-4 shadow-lg shrink-0">
+        <div className="w-full px-4">
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Escribe tu pregunta..."
+              className="flex-1 px-4 py-3 bg-gray-100 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputText.trim()}
+              className="w-12 h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition shadow-md"
+            >
+              <FaPaperPlane className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
-        }
-      `}</style>
+      </div>
     </div>
   );
 }

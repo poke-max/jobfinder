@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaMapMarkerAlt, FaHeart, FaHome, FaBriefcase, FaLayerGroup, FaTimes, FaLocationArrow, FaChevronDown, FaDollarSign, FaClock } from 'react-icons/fa';
 import { useAnimatedClose } from './hooks/useAnimatedClose';
+import './index.css'
 
 export default function MapboxComponent({ onClose }) {
   const mapContainerRef = useRef(null);
@@ -156,98 +157,7 @@ export default function MapboxComponent({ onClose }) {
   };
 
   return (
-    <div className={`relative w-full z-40 h-screen animate-slideUp ${getAnimationClass()}`}>
-      <style jsx>{`
-        :root {
-          --color-primary: #fa709a;
-          --color-primary-light: #fc8baa;
-          --color-primary-dark: #f8578a;
-          --color-secondary: #fee140;
-          --color-secondary-light: #fef280;
-          --color-secondary-dark: #fdd520;
-          --color-bg: #ffffff;
-        }
-
-        .bg-primary {
-          background-color: var(--color-primary);
-        }
-
-        .bg-primary-light {
-          background-color: var(--color-primary-light);
-        }
-
-        .bg-secondary {
-          background-color: var(--color-secondary);
-        }
-
-        .text-primary {
-          color: var(--color-primary);
-        }
-
-        .text-secondary-dark {
-          color: var(--color-secondary-dark);
-        }
-
-        .hover\\:bg-primary:hover {
-          background-color: var(--color-primary);
-        }
-
-        .hover\\:bg-primary-light:hover {
-          background-color: var(--color-primary-light);
-        }
-
-        .border-primary {
-          border-color: var(--color-primary);
-        }
-
-        .ring-primary {
-          --tw-ring-color: var(--color-primary);
-        }
-
-        .custom-marker {
-          width: 40px;
-          height: 40px;
-          background-color: var(--color-primary);
-          border-radius: 50%;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          transition: transform 0.2s;
-        }
-
-        .custom-marker.marker-hover {
-          transform: scale(1.2);
-        }
-
-        .user-location-marker {
-          width: 20px;
-          height: 20px;
-          background-color: var(--color-secondary);
-          border-radius: 50%;
-          border: 3px solid white;
-          box-shadow: 0 0 0 8px rgba(254, 225, 64, 0.3);
-        }
-
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .animate-slide-up {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
+    <div className={`absolute inset-0 z-40 ${getAnimationClass()}`}>
 
       {/* Mapa */}
       <div ref={mapContainerRef} className="w-full h-full" />
