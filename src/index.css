@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #fa709a;
+  --color-primary-light: #fc8baa;
+  --color-primary-dark: #f8578a;
+  --color-secondary: #fee140;
+  --color-secondary-light: #fef280;
+  --color-secondary-dark: #fdd520;
+  --color-bg: #ffffff;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+
+:root {
+  --color-primary: #fa709a;
+  --color-primary-light: #fc8baa;
+  --color-primary-dark: #f8578a;
+  --color-secondary: #fee140;
+  --color-secondary-light: #fef280;
+  --color-secondary-dark: #fdd520;
+  --color-bg: #ffffff;
+
+
+   --altura-barra: 4.5em;
+}
+
+.bg-bg {
+  background-color: var(--color-bg);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary-light {
+  background-color: var(--color-primary-light);
+}
+
+.bg-primary-dark {
+  background-color: var(--color-primary-dark);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-secondary-light {
+  background-color: var(--color-secondary-light);
+}
+
+.bg-secondary-dark {
+  background-color: var(--color-secondary-dark);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-primary-dark {
+  color: var(--color-primary-dark);
+}
+
+.text-secondary {
+  color: var(--color-secondary-dark);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.hover\\:bg-primary-light:hover {
+  background-color: var(--color-primary-light);
+}
+
+.hover\\:bg-primary:hover {
+  background-color: var(--color-primary);
+}
+
+.hover\\:bg-secondary:hover {
+  background-color: var(--color-secondary);
+}
+
+.focus\\:ring-primary:focus {
+  --tw-ring-color: var(--color-primary);
+}
+
+.bg-primary-opacity {
+  background-color: rgba(250, 112, 154, 0.1);
+}
+
+.hover\\:bg-primary-opacity:hover {
+  background-color: rgba(250, 112, 154, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+.animate-slideInFromLeft {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.animate-slideOutToLeft {
+  animation: slideOutToLeft 0.3s ease-out;
+}
+
+.animate-slideInFromRight {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.animate-slideOutToRight {
+  animation: slideOutToRight 0.3s ease-out;
+}
