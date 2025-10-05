@@ -13,7 +13,7 @@ export default function JobCard({
   onChat
 }) {
   return (
-<div className="bg-white rounded-3xl shadow-2xl max-w-md w-full h-[75vh] overflow-hidden relative">
+<div className="bg-white rounded-3xl shadow-2xl max-w-md w-full h-full overflow-hidden relative">
   {job.url ? (
     <img 
       src={job.url} 

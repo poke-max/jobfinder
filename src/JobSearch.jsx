@@ -85,7 +85,7 @@ export default function JobSearch({
       setLoading(true);
       let jobsData = [];
 
-      if (mode === 'favorites') {
+if (mode === 'favorites') {
         // Cargar trabajos favoritos del usuario
         const userDocRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userDocRef);
@@ -94,18 +94,29 @@ export default function JobSearch({
           const savedJobIds = userDoc.data().savedJobs || [];
           
           if (savedJobIds.length > 0) {
-            // Cargar cada trabajo guardado
-            const jobPromises = savedJobIds.map(async (jobId) => {
-              const jobDocRef = doc(db, 'jobs', jobId);
-              const jobDoc = await getDoc(jobDocRef);
-              if (jobDoc.exists()) {
-                return { id: jobDoc.id, ...jobDoc.data() };
-              }
-              return null;
-            });
+            // Validar y filtrar IDs válidos
+            const validJobIds = savedJobIds.filter(id => 
+              id && typeof id === 'string' && id.trim().length > 0
+            );
             
-            const jobsResults = await Promise.all(jobPromises);
-            jobsData = jobsResults.filter(job => job !== null);
+            if (validJobIds.length > 0) {
+              // Cargar cada trabajo guardado
+              const jobPromises = validJobIds.map(async (jobId) => {
+                try {
+                  const jobDocRef = doc(db, 'jobs', jobId);
+                  const jobDoc = await getDoc(jobDocRef);
+                  if (jobDoc.exists()) {
+                    return { id: jobDoc.id, ...jobDoc.data() };
+                  }
+                } catch (error) {
+                  console.error(`Error loading job ${jobId}:`, error);
+                }
+                return null;
+              });
+              
+              const jobsResults = await Promise.all(jobPromises);
+              jobsData = jobsResults.filter(job => job !== null);
+            }
           }
         }
       } else if (mode === 'published') {
