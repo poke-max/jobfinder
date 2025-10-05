@@ -446,7 +446,7 @@ export default function JobFeed({ user, onLogout }) {
     onSwiper={(swiper) => (swiperRef.current = swiper)}
     modules={[Mousewheel, Keyboard]}
     className="w-full h-full"
-    speed={2}
+/*     speed={100} */
     resistance={true}
     resistanceRatio={0.85}
     enabled={!showMap && !showChat} 
