@@ -114,7 +114,7 @@ export default function JobMapView({ job, onClose }) {
   };
 
   return (
-    <div className={`absolute inset-0 flex items-center justify-center p-2 z-40 ${getAnimationClass()}`}>
+    <div className={`absolute inset-0 flex items-center justify-center z-50 ${getAnimationClass()}`}>
       <div className="bg-white overflow-hidden modal-card flex flex-col">
         {/* Contenedor del Mapa */}
         <div className="flex-1 relative">

@@ -7,7 +7,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import { getFirestore, collection, query, limit, startAfter, getDoc, getDocs, doc, setDoc, serverTimestamp, where, orderBy } from 'firebase/firestore';
-import { FaTimes, FaStepBackward, FaComments, FaPaperPlane, FaRobot, FaStar, FaMapPin, FaLocationArrow, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaTimes, FaRegPaperPlane,FaRegMap, FaRegStar, FaStepBackward, FaComments, FaPaperPlane, FaRobot, FaStar, FaMapPin, FaLocationArrow, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
 import { IoArrowUndoSharp } from "react-icons/io5";
 
 import JobMapView from './JobMapView';
@@ -509,7 +509,7 @@ export default function JobFeed({ user, onLogout }) {
 
 return (
   <>
-    <div className="relative w-full h-dvh bg-bg overflow-hidden">
+    <div className="relative w-full h-dvh pt-20  bg-bg overflow-hidden">
       {/* Barra de búsqueda FIJA fuera del Swiper */}
       <div className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
         <div className="relative max-w-lg mx-auto pointer-events-auto">
@@ -518,7 +518,7 @@ return (
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar empleos..."
-            className="w-full h-12 pl-12 pr-4 bg-white rounded-full shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700"
+            className="w-full h-12 pl-12 pr-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
           />
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           {isSearching && (
@@ -541,7 +541,6 @@ return (
         onSwiper={(swiper) => (swiperRef.current = swiper)}
         modules={[Mousewheel, Keyboard]}
         className="w-full h-full"
-        /*     speed={100} */
         resistance={true}
         resistanceRatio={0.85}
         enabled={!showMap && !showChat}
@@ -552,9 +551,9 @@ return (
 
           return (
             <SwiperSlide key={job.id}>
-              <div className="flex flex-col h-full pt-20 pb-32 px-4">
-                {/* JobCard centrada con padding-top para compensar la barra fija */}
-                <div className="flex-1 flex items-center justify-center">
+              <div className="flex flex-col h-full">
+                {/* JobCard posicionada arriba */}
+                <div className="flex-1 flex items-start justify-center">
                   <JobCard
                     job={job}
                     isSaved={isSavedJob}
@@ -567,8 +566,6 @@ return (
                     onSave={() => handleSave(job.id)}
                   />
                 </div>
-
-    
               </div>
             </SwiperSlide>
           );
@@ -589,36 +586,37 @@ return (
         </div>
       )}
 
-      {currentTab === 'inicio' && !searchQuery && showButtonsAnimation && (
+{/* {currentTab === 'inicio' && !searchQuery && showButtonsAnimation && (
         <>
-          <div className="fixed bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-40 pointer-events-none">
-            <button
-              onClick={openChat}
-              className="w-14 h-14 bg-white rounded-full text-purple-400 hover:bg-purple-50 flex items-center justify-center transition-all shadow-lg pointer-events-auto active:scale-90 hover:scale-110 animate-bounce-in"
-            >
-              <FaComments className="text-2xl" />
-            </button>
+          <div className="fixed bottom-52  right-0 px-6 z-40 pointer-events-none">
+            <div className="max-w-lg mx-auto flex items-center justify-center gap-0 pointer-events-auto">
+              <button
+                onClick={openChat}
+                className="w-14 h-14 flex items-center justify-center transition-all active:scale-95 text-gray-700"
+              >
+                <FaRegPaperPlane className="text-3xl" />
+              </button>
 
-            <button
-              onClick={() => handleSave(currentJob.id)}
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-lg focus:outline-none border-none pointer-events-auto active:scale-90 hover:scale-110 animate-bounce-in ${isSaved
-                ? 'bg-teal-400 hover:bg-teal-500 text-white animate-bounce-in'
-                : 'bg-white text-teal-400 hover:bg-teal-50 animate-bounce-in'
-                } ${justSaved ? 'bounce-custom' : ''}`}
-            >
-              <FaStar className="text-3xl" />
-            </button>
+              <button
+                onClick={() => handleSave(currentJob.id)}
+                className={`w-16 h-16 flex items-center justify-center transition-all focus:outline-none active:scale-95 ${
+                  isSaved ? 'text-primary' : 'text-gray-700'
+                }`}
+              >
+                {isSaved ? <FaStar className="text-4xl" /> : <FaRegStar className="text-4xl" />}
+              </button>
 
-            <button
-              onClick={() => setShowMap(true)}
-              className="w-14 h-14 bg-white rounded-full text-blue-400 hover:bg-blue-50 flex items-center justify-center transition-all shadow-lg pointer-events-auto active:scale-90 hover:scale-110 animate-bounce-in"
-            >
-              <FaMapMarkerAlt className="text-3xl" />
-            </button>
+              <button
+                onClick={() => setShowMap(true)}
+                className="w-14 h-14 flex items-center justify-center transition-all active:scale-95 text-gray-700"
+              >
+                <FaRegMap className="text-3xl" />
+              </button>
+            </div>
           </div>
         </>
-      )}
-      
+      )} */}
+
       {currentTab === 'inicio' && (
         <>
           {showMap && (

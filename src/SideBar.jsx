@@ -1,27 +1,38 @@
 import React, { useState } from 'react';
 import { 
-  FaFire, FaComments, FaBookmark, FaMapMarkedAlt, FaPlusCircle, 
+  FaHome, FaComments, FaBookmark, FaMapMarkedAlt , 
   FaUser, FaBars, FaTimes, FaStar 
+} from 'react-icons/fa';
+
+import { FaSquarePlus } from "react-icons/fa6";
+
+import {
+  FaRegComments,
+  FaRegBookmark,
+  FaRegMap,
+  FaRegPlusSquare,
+  FaRegStar,
+  FaRegUser
 } from 'react-icons/fa';
 
 export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const mobileItems = [
-    { id: 'inicio', icon: FaFire, label: 'Inicio' },
-    { id: 'mapa', icon: FaMapMarkedAlt, label: 'Explorar' },
-    { id: 'publicar', icon: FaPlusCircle, label: 'Publicar' },
-    { id: 'favoritos', icon: FaStar, label: 'Favoritos' },
-    { id: 'perfil', icon: FaUser, label: 'Perfil' }
+    { id: 'inicio', icon: FaHome, iconReg: FaHome, label: 'Inicio' },
+    { id: 'mapa', icon: FaMapMarkedAlt, iconReg: FaRegMap, label: 'Explorar' },
+    { id: 'publicar', icon: FaSquarePlus , iconReg: FaRegPlusSquare, label: 'Publicar' },
+    { id: 'favoritos', icon: FaStar, iconReg: FaRegStar, label: 'Favoritos' },
+    { id: 'perfil', icon: FaUser, iconReg: FaRegUser, label: 'Perfil' }
   ];
 
   const desktopItems = [
-    { id: 'inicio', icon: FaFire, label: 'Inicio' },
-    { id: 'mensajes', icon: FaComments, label: 'Mensajes' },
-    { id: 'favoritos', icon: FaStar, label: 'Favoritos' },
-    { id: 'mapa', icon: FaMapMarkedAlt, label: 'Explorar' },
-    { id: 'publicar', icon: FaPlusCircle, label: 'Publicar' },
-    { id: 'perfil', icon: FaUser, label: 'Mi Perfil' }
+    { id: 'inicio', icon: FaHome, iconReg: FaHome, label: 'Inicio' },
+    { id: 'mensajes', icon: FaComments, iconReg: FaRegComments, label: 'Mensajes' },
+    { id: 'favoritos', icon: FaStar, iconReg: FaRegStar, label: 'Favoritos' },
+    { id: 'mapa', icon: FaMapMarkedAlt, iconReg: FaRegMap, label: 'Explorar' },
+    { id: 'publicar', icon: FaSquarePlus , iconReg: FaRegPlusSquare, label: 'Publicar' },
+    { id: 'perfil', icon: FaUser, iconReg: FaRegUser, label: 'Mi Perfil' }
   ];
 
   const handleItemClick = (itemId) => {
@@ -35,14 +46,14 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
       <div className="hidden lg:flex lg:fixed lg:left-0 lg:top-0 lg:h-full lg:w-20 lg:bg-white lg:shadow-md lg:flex-col lg:z-200 lg:items-center lg:py-6">
         {/* Logo */}
         <div className="mb-8">
-          <FaFire className="w-8 h-8 text-primary" />
+          <FaHome className="w-8 h-8 text-primary" />
         </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 flex flex-col items-center gap-6">
           {desktopItems.map((item) => {
-            const Icon = item.icon;
             const isActive = activeTab === item.id;
+            const Icon = isActive ? item.icon : item.iconReg;
             
             return (
               <button
@@ -80,15 +91,15 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
       ">
         <div className="flex items-center justify-around px-4 h-full">
           {mobileItems.map((item) => {
-            const Icon = item.icon;
             const isActive = activeTab === item.id;
+            const Icon = isActive ? item.icon : item.iconReg;
             
             return (
               <button
                 key={item.id}
                 onClick={() => handleItemClick(item.id)}
                 className={`flex flex-col items-center transition-all ${
-                  isActive ? 'text-primary scale-110' : 'text-gray-400'
+                  isActive ? 'text-primary scale-110' : 'text-black'
                 }`}
               >
                 <Icon className="text-2xl mb-0" />
@@ -97,14 +108,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
           })}
         </div>
       </div>
-
-      {/* Hamburger Menu Button - Mobile */}
-{/*       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-full shadow-lg text-gray-700"
-      >
-        {isOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
-      </button> */}
 
       {/* Slide Menu Mobile */}
       {isOpen && (
@@ -116,7 +119,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange }) {
           <div className="lg:hidden fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <FaFire className="text-primary" />
+                <FaHome className="text-primary" />
                 JobFeed
               </h2>
             </div>
