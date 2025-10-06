@@ -506,14 +506,23 @@ export default function JobFeed({ user, onLogout }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar empleos..."
-              className="w-full h-12 pl-12 pr-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
+              className="w-full h-12 pl-12 pr-12 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
             />
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            {isSearching && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {isSearching && (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-              </div>
-            )}
+              )}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <FaTimes className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -563,7 +572,7 @@ export default function JobFeed({ user, onLogout }) {
         <div className="flex-shrink-0 h-[4em]"></div>
 
         {searchQuery && searchResults.length === 0 && !isSearching && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white z-50">
+          <div className="absolute inset-0 flex items-center justify-center bg-white z-0">
             <div className="text-center p-6">
               <FaMapPin className="w-32 h-32 mx-auto mb-6 text-gray-300" />
               <p className="text-xl text-gray-800 font-semibold mb-2">
