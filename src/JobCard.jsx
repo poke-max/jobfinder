@@ -31,9 +31,9 @@ export default function JobCard({
       easing={(type) => (type === 2 ? 'cubic-bezier(0.36, 0, 0.66, -0.56)' : 'cubic-bezier(0.34, 1.56, 0.64, 1)')}
       maskOpacity={0.95}
     >
-      <div className="bg-white modal-card overflow-hidden relative flex flex-col h-screen">
-        {/* Sección de Imagen - Altura fija 70% */}
-        <div className="relative w-full h-[70vh] overflow-hidden flex-shrink-0">
+      <div className="bg-white modal-card overflow-hidden relative flex flex-col max-h-full">
+        {/* Sección de Imagen - 60% de la altura */}
+        <div className="relative w-full flex-shrink-0" style={{ height: '60%' }}>
           {job.images && job.images.length > 0 ? (
             <Swiper
               direction="horizontal"
@@ -80,7 +80,7 @@ export default function JobCard({
               <div className="w-full h-full cursor-pointer">
                 {/* Fondo blur usando background-image CSS */}
                 <div
-                  className="absolute inset-0 w-full h-[70vh] blur-3xl scale-110"
+                  className="absolute inset-0 w-full h-full blur-3xl scale-110"
                   style={{
                     backgroundImage: `url(${job.url})`,
                     backgroundSize: 'cover',
@@ -112,8 +112,8 @@ export default function JobCard({
           )}
         </div>
 
-        {/* Sección de Información - Altura fija 30% */}
-        <div className="p-4 bg-white h-[30vh] overflow-y-auto flex-shrink-0">
+        {/* Sección de Información - 40% de la altura con scroll */}
+        <div className="p-4 bg-white flex-shrink-0 overflow-y-auto" style={{ height: '40%' }}>
           {/* Información del trabajo */}
           <div className="flex items-start gap-3 mb-4">
             <div className="flex-1 min-w-0">
@@ -128,8 +128,6 @@ export default function JobCard({
                     {job.isActive ? 'Disponible' : 'No disponible'}
                   </span>
                 )}
-
-
               </div>
               {job.company && (
                 <p className="text-gray-600 text-sm">{job.company}</p>
