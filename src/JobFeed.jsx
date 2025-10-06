@@ -7,7 +7,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import { getFirestore, collection, query, limit, startAfter, getDoc, getDocs, doc, setDoc, serverTimestamp, where, orderBy } from 'firebase/firestore';
-import { FaTimes, FaRegPaperPlane,FaRegMap, FaRegStar, FaStepBackward, FaComments, FaPaperPlane, FaRobot, FaStar, FaMapPin, FaLocationArrow, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaTimes, FaRegPaperPlane, FaRegMap, FaRegStar, FaStepBackward, FaComments, FaPaperPlane, FaRobot, FaStar, FaMapPin, FaLocationArrow, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
 import { IoArrowUndoSharp } from "react-icons/io5";
 
 import JobMapView from './JobMapView';
@@ -282,18 +282,6 @@ export default function JobFeed({ user, onLogout }) {
     }
   };
 
-  // Abrir chat
-  const openChat = () => {
-    setShowChat(true);
-    if (!messages.length) {
-      setMessages([{
-        id: 1,
-        type: 'bot',
-        text: `¡Hola! Soy tu asistente virtual. Puedo ayudarte con información sobre ${jobs[currentIndex]?.title || 'este trabajo'}. ¿Qué te gustaría saber?`,
-        timestamp: new Date()
-      }]);
-    }
-  };
 
   // Enviar mensaje
   const handleSendMessage = () => {
@@ -507,161 +495,161 @@ export default function JobFeed({ user, onLogout }) {
   const isSaved = savedJobs.has(currentJob?.id);
   const justSaved = jobStates[currentJob?.id]?.justSaved;
 
-return (
-<>
-  <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col">
-    {/* Barra de búsqueda FIJA arriba */}
-    <div className="flex-shrink-0 z-50 p-4">
-      <div className="relative max-w-lg mx-auto">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar empleos..."
-          className="w-full h-12 pl-12 pr-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
-        />
-        <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        {isSearching && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+  return (
+    <>
+      <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col">
+        {/* Barra de búsqueda FIJA arriba */}
+        <div className="flex-shrink-0 z-50 p-4">
+          <div className="relative max-w-lg mx-auto">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar empleos..."
+              className="w-full h-12 pl-12 pr-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
+            />
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            {isSearching && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Swiper Container - Ocupa el espacio disponible entre las barras */}
+        <div className="flex-1 overflow-hidden">
+          <Swiper
+            direction="vertical"
+            slidesPerView={1}
+            mousewheel={true}
+            keyboard={{
+              enabled: true,
+            }}
+            onSlideChange={handleSlideChange}
+            onSwiper={(swiper) => (swiperRef.current = swiper)}
+            modules={[Mousewheel, Keyboard]}
+            className="w-full h-full"
+            resistance={true}
+            resistanceRatio={0.85}
+            enabled={!showMap && !showChat}
+          >
+            {getFilteredJobs().map((job, index) => {
+              const isSavedJob = savedJobs.has(job.id);
+              const justSavedJob = jobStates[job.id]?.justSaved;
+
+              return (
+                <SwiperSlide key={job.id}>
+                  <div className="flex items-center justify-center h-full ">
+                    <JobCard
+                      job={job}
+                      isSaved={isSavedJob}
+                      justSaved={justSavedJob}
+                      showDetails={showDetails[job.id]}
+                      onToggleDetails={() =>
+                        setShowDetails(prev => ({ ...prev, [job.id]: !prev[job.id] }))
+                      }
+                      onDismiss={() => handleDismiss(job.id)}
+                      onSave={() => handleSave(job.id)}
+                    />
+                  </div>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+        </div>
+
+        {/* Espacio reservado para el Sidebar - evita que el contenido quede detrás */}
+        <div className="flex-shrink-0 h-20"></div>
+
+        {searchQuery && searchResults.length === 0 && !isSearching && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white z-50">
+            <div className="text-center p-6">
+              <FaMapPin className="w-32 h-32 mx-auto mb-6 text-gray-300" />
+              <p className="text-xl text-gray-800 font-semibold mb-2">
+                No se encontraron resultados
+              </p>
+              <p className="text-gray-500">
+                para "{searchQuery}"
+              </p>
+            </div>
           </div>
         )}
-      </div>
-    </div>
 
-    {/* Swiper Container - Ocupa el espacio disponible entre las barras */}
-    <div className="flex-1 overflow-hidden">
-      <Swiper
-        direction="vertical"
-        slidesPerView={1}
-        mousewheel={true}
-        keyboard={{
-          enabled: true,
-        }}
-        onSlideChange={handleSlideChange}
-        onSwiper={(swiper) => (swiperRef.current = swiper)}
-        modules={[Mousewheel, Keyboard]}
-        className="w-full h-full"
-        resistance={true}
-        resistanceRatio={0.85}
-        enabled={!showMap && !showChat}
-      >
-        {getFilteredJobs().map((job, index) => {
-          const isSavedJob = savedJobs.has(job.id);
-          const justSavedJob = jobStates[job.id]?.justSaved;
+        {currentTab === 'inicio' && (
+          <>
+            {showMap && (
+              <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
+            )}
 
-          return (
-            <SwiperSlide key={job.id}>
-              <div className="flex items-center justify-center h-full ">
-                <JobCard
-                  job={job}
-                  isSaved={isSavedJob}
-                  justSaved={justSavedJob}
-                  showDetails={showDetails[job.id]}
-                  onToggleDetails={() =>
-                    setShowDetails(prev => ({ ...prev, [job.id]: !prev[job.id] }))
-                  }
-                  onDismiss={() => handleDismiss(job.id)}
-                  onSave={() => handleSave(job.id)}
-                />
-              </div>
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
-    </div>
-
-    {/* Espacio reservado para el Sidebar - evita que el contenido quede detrás */}
-    <div className="flex-shrink-0 h-20"></div>
-
-    {searchQuery && searchResults.length === 0 && !isSearching && (
-      <div className="absolute inset-0 flex items-center justify-center bg-white z-50">
-        <div className="text-center p-6">
-          <FaMapPin className="w-32 h-32 mx-auto mb-6 text-gray-300" />
-          <p className="text-xl text-gray-800 font-semibold mb-2">
-            No se encontraron resultados
-          </p>
-          <p className="text-gray-500">
-            para "{searchQuery}"
-          </p>
-        </div>
-      </div>
-    )}
-
-    {currentTab === 'inicio' && (
-      <>
-        {showMap && (
-          <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
+            {showChat && (
+              <JobContactView job={currentJob} onClose={() => setShowChat(false)} />
+            )}
+          </>
         )}
 
-        {showChat && (
-          <JobContactView job={currentJob} onClose={() => setShowChat(false)} />
+        {/* Modales */}
+        {showSearch && (
+          <JobSearch
+            user={user}
+            mode="search"
+            onClose={() => {
+              setShowSearch(false);
+              setCurrentTab('inicio');
+            }}
+          />
         )}
-      </>
-    )}
 
-    {/* Modales */}
-    {showSearch && (
-      <JobSearch
-        user={user}
-        mode="search"
-        onClose={() => {
-          setShowSearch(false);
-          setCurrentTab('inicio');
-        }}
+        {showFavorites && (
+          <JobSearch
+            user={user}
+            mode="favorites"
+            onClose={() => {
+              setShowFavorites(false);
+              setCurrentTab('inicio');
+            }}
+          />
+        )}
+
+        {showPublished && (
+          <JobSearch
+            user={user}
+            mode="published"
+            onClose={() => {
+              setShowPublished(false);
+              setCurrentTab('inicio');
+            }}
+          />
+        )}
+
+        {showGeneralMap && (
+          <MapboxComponent
+            onClose={() => {
+              setShowGeneralMap(false);
+              setCurrentTab('inicio');
+            }}
+          />
+        )}
+
+        {showPublish && (
+          <PublishComponent
+            userId={userId}
+            onClose={() => {
+              setShowPublish(false);
+              setCurrentTab('inicio');
+            }}
+            onSuccess={() => {
+              loadJobs();
+            }}
+          />
+        )}
+      </div>
+
+      {/* Sidebar FIJA abajo - fuera del contenedor principal */}
+      <SideBar
+        activeTab={currentTab}
+        onTabChange={handleTabChange}
       />
-    )}
-
-    {showFavorites && (
-      <JobSearch
-        user={user}
-        mode="favorites"
-        onClose={() => {
-          setShowFavorites(false);
-          setCurrentTab('inicio');
-        }}
-      />
-    )}
-
-    {showPublished && (
-      <JobSearch
-        user={user}
-        mode="published"
-        onClose={() => {
-          setShowPublished(false);
-          setCurrentTab('inicio');
-        }}
-      />
-    )}
-
-    {showGeneralMap && (
-      <MapboxComponent
-        onClose={() => {
-          setShowGeneralMap(false);
-          setCurrentTab('inicio');
-        }}
-      />
-    )}
-
-    {showPublish && (
-      <PublishComponent
-        userId={userId}
-        onClose={() => {
-          setShowPublish(false);
-          setCurrentTab('inicio');
-        }}
-        onSuccess={() => {
-          loadJobs();
-        }}
-      />
-    )}
-  </div>
-
-  {/* Sidebar FIJA abajo - fuera del contenedor principal */}
-  <SideBar
-    activeTab={currentTab}
-    onTabChange={handleTabChange}
-  />
-</>
-);
+    </>
+  );
 }

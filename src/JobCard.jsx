@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar, FaPlane, FaPaperPlane } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
@@ -19,8 +19,9 @@ export default function JobCard({
   onLocate,
   onChat
 }) {
-  const [dominantColor, setDominantColor] = useState('rgb(66, 153, 225)'); // Color por defecto (azul)
-  const colorThief = new ColorThief();
+  const [dominantColor, setDominantColor] = useState('rgb(66, 153, 225)');
+  const swiperRef = useRef(null);
+  const colorThiefRef = useRef(new ColorThief());
 
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
@@ -32,8 +33,8 @@ export default function JobCard({
   // Función para extraer el color dominante
   const extractDominantColor = (imgElement) => {
     try {
-      if (imgElement.complete) {
-        const color = colorThief.getColor(imgElement);
+      if (imgElement.complete && imgElement.naturalHeight !== 0) {
+        const color = colorThiefRef.current.getColor(imgElement);
         setDominantColor(`rgb(${color[0]}, ${color[1]}, ${color[2]})`);
       }
     } catch (error) {
@@ -59,7 +60,7 @@ export default function JobCard({
     >
       <div className="bg-white modal-card flex flex-col">
         {/* Sección de Imagen - Toma todo el espacio disponible */}
-        <div className="relative w-full flex-1 overflow-hidden">
+        <div className="relative w-full flex-1 overflow-visible">
           {job.images && job.images.length > 0 ? (
             <Swiper
               direction="horizontal"
@@ -73,11 +74,14 @@ export default function JobCard({
               className="w-full h-full"
               nested={true}
               allowTouchMove={true}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
               onSlideChange={(swiper) => {
                 // Extraer color de la nueva imagen cuando cambia el slide
                 const activeSlide = swiper.slides[swiper.activeIndex];
                 const img = activeSlide?.querySelector('img');
-                if (img) {
+                if (img && img.complete) {
                   extractDominantColor(img);
                 }
               }}
@@ -100,7 +104,8 @@ export default function JobCard({
                         className="relative w-full h-full object-contain z-10"
                         crossOrigin="anonymous"
                         onLoad={(e) => {
-                          if (index === 0 || swiper?.activeIndex === index) {
+                          // Solo extraer color si es la imagen activa
+                          if (!swiperRef.current || swiperRef.current.activeIndex === index) {
                             extractDominantColor(e.target);
                           }
                         }}
@@ -137,24 +142,49 @@ export default function JobCard({
               </div>
             </PhotoView>
           ) : (
-            <div 
+            <div
               className="w-full h-full"
               style={{ backgroundColor: dominantColor }}
             ></div>
           )}
 
-          {justSaved && (
-            <div className="absolute inset-0 bg-teal-400/80 pointer-events-none z-50 flex items-center justify-center animate-fav-ani">
-              <div className="text-white text-center">
-                <FaStar className="text-6xl mx-auto mb-4 animate-bounce" />
-                <div className="text-2xl font-bold">Añadido a favoritos</div>
-              </div>
-            </div>
-          )}
+          {/* ⭐ BOTONES CIRCULARES - AQUÍ VAN ⭐ */}
+          <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-40">
+
+            <button
+              onClick={onDismiss}
+              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center justify-center shadow-lg transition-all duration-300"
+              title="Descartar"
+            >
+              <FaTimes className="text-lg" />
+            </button>
+            <button
+              onClick={onSave}
+              className={`w-12 h-12 rounded-full flex  items-center justify-center shadow-lg transition-all duration-300 ${isSaved
+                ? 'bg-teal-400 text-white hover:bg-teal-500 animate-bounce-scale'
+                : 'bg-white text-gray-700 hover:bg-gray-100 '
+                }`}
+              title={isSaved ? "Quitar de favoritos" : "Guardar en favoritos"}
+            >
+              <FaStar className="text-lg" />
+            </button>
+
+
+
+            <button
+              onClick={onChat}
+              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center justify-center shadow-lg transition-all duration-300"
+              title="Chat"
+            >
+              <FaPaperPlane className="text-lg" />
+            </button>
+          </div>
+
+
         </div>
 
         {/* Sección de Información - Altura automática basada en contenido */}
-        <div className="p-4 bg-white flex-shrink-0">
+        <div className="py-6 px-4  pxbg-white flex-shrink-0">
           {/* Información del trabajo */}
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
