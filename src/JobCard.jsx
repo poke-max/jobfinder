@@ -166,7 +166,7 @@ export default function JobCard({
               onClick={onSave}
               className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${isSaved
                 ? 'bg-teal-400 text-white hover:bg-teal-500 animate-bounce-scale'
-                : 'bg-white text-gray-700 hover:bg-gray-100 animate-bounce-scale'
+                : 'bg-white text-gray-700 hover:bg-gray-100 '
                 }`}
               title={isSaved ? "Quitar de favoritos" : "Guardar en favoritos"}
             >
