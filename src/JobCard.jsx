@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow } from 'react-icons/fa';
+import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
@@ -19,11 +19,11 @@ export default function JobCard({
   onChat
 }) {
   // Preparar todas las imágenes
-  const allImages = job.images && job.images.length > 0 
-    ? job.images 
-    : job.url 
-    ? [job.url] 
-    : [];
+  const allImages = job.images && job.images.length > 0
+    ? job.images
+    : job.url
+      ? [job.url]
+      : [];
 
   return (
     <PhotoProvider
@@ -101,7 +101,17 @@ export default function JobCard({
         )}
 
         {/* Gradiente inferior */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-5"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-12"></div>
+
+
+        {justSaved && (
+          <div className="absolute bottom-0 left-0 right-0 h-full bg-teal-400/80 pointer-events-none z-100 flex items-center justify-center animate-fav-ani">
+            <div className="text-white text-center">
+              <FaStar className="text-6xl mx-auto mb-4 animate-bounce" />
+              <div className="text-2xl font-bold">Añadido a favoritos</div>
+            </div>
+          </div>
+        )}
 
         <div className="absolute inset-0 flex flex-col justify-between p-4 z-30 pointer-events-none">
           {/* 🔹 Descripción arriba */}

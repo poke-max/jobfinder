@@ -157,7 +157,7 @@ export default function MapboxComponent({ onClose }) {
   };
 
   return (
-    <div className={`absolute inset-0 z-40 ${getAnimationClass()}`}>
+    <div className={`absolute inset-0 z-50 ${getAnimationClass()}`}>
 
       {/* Mapa */}
       <div ref={mapContainerRef} className="w-full h-full" />
