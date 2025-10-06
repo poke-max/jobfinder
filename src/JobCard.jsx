@@ -31,9 +31,9 @@ export default function JobCard({
       easing={(type) => (type === 2 ? 'cubic-bezier(0.36, 0, 0.66, -0.56)' : 'cubic-bezier(0.34, 1.56, 0.64, 1)')}
       maskOpacity={0.95}
     >
-      <div className="bg-white modal-card overflow-hidden relative flex flex-col max-h-full">
-        {/* Sección de Imagen - 60% de la altura */}
-        <div className="relative w-full flex-shrink-0" style={{ height: '60%' }}>
+      <div className="bg-white modal-card flex flex-col">
+        {/* Sección de Imagen - Toma todo el espacio disponible */}
+        <div className="relative w-full flex-1 overflow-hidden">
           {job.images && job.images.length > 0 ? (
             <Swiper
               direction="horizontal"
@@ -112,27 +112,26 @@ export default function JobCard({
           )}
         </div>
 
-        {/* Sección de Información - 40% de la altura con scroll */}
-        <div className="p-4 bg-white flex-shrink-0 overflow-y-auto" style={{ height: '40%' }}>
+        {/* Sección de Información - Altura automática basada en contenido */}
+        <div className="p-4 bg-white flex-shrink-0">
           {/* Información del trabajo */}
-          <div className="flex items-start gap-3 mb-4">
+          <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
-              <div className='flex flex-row gap-2'>
+              <div className='flex flex-row gap-2 items-center flex-wrap'>
                 {job.title && (
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">{job.title}</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{job.title}</h2>
                 )}
                 {job.isActive !== undefined && (
-                  <span className={`flex items-center gap-1 px-2 py-1 rounded-full ${job.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
+                  <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${job.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     <span className={`w-2 h-2 rounded-full ${job.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
                     {job.isActive ? 'Disponible' : 'No disponible'}
                   </span>
                 )}
               </div>
               {job.company && (
-                <p className="text-gray-600 text-sm">{job.company}</p>
+                <p className="text-gray-600 text-sm mt-1">{job.company}</p>
               )}
-              <div className="flex gap-3 mt-2 text-xs text-gray-600 flex-wrap">
+              <div className="flex gap-2 mt-2 text-xs text-gray-600 flex-wrap">
                 {job.city && (
                   <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
                     <FaMapPin className="w-3 h-3" />
@@ -153,7 +152,7 @@ export default function JobCard({
                 )}
               </div>
               {job.createdAt && (
-                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1 right-0">
+                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <FaClock className="w-3 h-3" />
                   {job.createdAt.toDate ? job.createdAt.toDate().toLocaleDateString() : job.createdAt}
                 </p>
