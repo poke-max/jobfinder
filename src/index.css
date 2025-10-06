@@ -307,7 +307,7 @@
   opacity: 0.7 !important;
   width: 8px !important;
   height: 8px !important;
-
+  pointer-events: none !important;
 }
 
 .swiper-pagination-bullet-active {
@@ -315,9 +315,11 @@
   width: 20px !important;
   border-radius: 4px !important;
   transition: width 0.3s;
+  pointer-events: none !important;
 }
 
 .swiper-pagination {
   top: 20px !important;
   z-index: 30 !important;
+  pointer-events: none !important;
 }
