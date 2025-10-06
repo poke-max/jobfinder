@@ -57,7 +57,7 @@ export default function Login({ onLoginSuccess }) {
       <div className="w-full max-w-md">
         {/* Tarjeta de Login */}
         <div 
-          className="rounded-3xl shadow-2xl p-8 backdrop-blur-sm"
+          className="rounded-3xl shadow-2xl p-8 "
           style={{ 
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             border: '1px solid rgba(255, 255, 255, 0.3)'

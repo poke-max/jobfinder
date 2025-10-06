@@ -60,7 +60,7 @@ return (
   >
     <div className="bg-white modal-card overflow-hidden relative flex flex-col h-screen">
       {/* Sección de Imagen - Altura fija 70% */}
-      <div className="relative w-full h-[70vh] overflow-visible flex-shrink-0">
+      <div className="relative w-full flex-1 overflow-visible flex-shrink-1">
         {job.images && job.images.length > 0 ? (
           <Swiper
             direction="horizontal"
@@ -179,7 +179,7 @@ return (
       </div>
 
       {/* Sección de Información - Altura fija 30% */}
-      <div className="py-6 px-4 bg-white h-[30vh] overflow-y-auto flex-shrink-0">
+      <div className="py-6 items-end px-4 bg-white h-[20vh] overflow-y-auto">
         {/* Información del trabajo */}
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
