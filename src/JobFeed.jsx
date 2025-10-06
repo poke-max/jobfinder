@@ -560,7 +560,7 @@ export default function JobFeed({ user, onLogout }) {
         </div>
 
         {/* Espacio reservado para el Sidebar - evita que el contenido quede detrás */}
-        <div className="flex-shrink-0 h-20"></div>
+        <div className="flex-shrink-0 h-[4em]"></div>
 
         {searchQuery && searchResults.length === 0 && !isSearching && (
           <div className="absolute inset-0 flex items-center justify-center bg-white z-50">
