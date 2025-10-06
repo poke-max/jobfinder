@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
+import ColorThief from 'colorthief';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'react-photo-view/dist/react-photo-view.css';
@@ -18,12 +19,37 @@ export default function JobCard({
   onLocate,
   onChat
 }) {
+  const [dominantColor, setDominantColor] = useState('rgb(66, 153, 225)'); // Color por defecto (azul)
+  const colorThief = new ColorThief();
+
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
     ? job.images
     : job.url
       ? [job.url]
       : [];
+
+  // Función para extraer el color dominante
+  const extractDominantColor = (imgElement) => {
+    try {
+      if (imgElement.complete) {
+        const color = colorThief.getColor(imgElement);
+        setDominantColor(`rgb(${color[0]}, ${color[1]}, ${color[2]})`);
+      }
+    } catch (error) {
+      console.error('Error extrayendo color:', error);
+    }
+  };
+
+  // Cargar el color de la primera imagen disponible
+  useEffect(() => {
+    if (allImages.length > 0) {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = allImages[0];
+      img.onload = () => extractDominantColor(img);
+    }
+  }, [job.images, job.url]);
 
   return (
     <PhotoProvider
@@ -47,25 +73,37 @@ export default function JobCard({
               className="w-full h-full"
               nested={true}
               allowTouchMove={true}
+              onSlideChange={(swiper) => {
+                // Extraer color de la nueva imagen cuando cambia el slide
+                const activeSlide = swiper.slides[swiper.activeIndex];
+                const img = activeSlide?.querySelector('img');
+                if (img) {
+                  extractDominantColor(img);
+                }
+              }}
             >
               {job.images.map((imageUrl, index) => (
                 <SwiperSlide key={index}>
                   <PhotoView src={imageUrl}>
                     <div className="relative w-full h-full cursor-pointer">
-                      {/* Fondo blur usando background-image CSS */}
+                      {/* Fondo con color dominante */}
                       <div
-                        className="absolute inset-0 w-full h-full blur-2xl scale-110"
+                        className="absolute inset-0 w-full h-full"
                         style={{
-                          /* backgroundImage: `url(${imageUrl})`, */
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center'
+                          backgroundColor: dominantColor
                         }}
                       />
                       {/* Imagen principal */}
                       <img
                         src={imageUrl}
                         alt={`${job.title} - ${index + 1}`}
-                        className="relative w-full h-full object-cover z-10"
+                        className="relative w-full h-full object-contain z-10"
+                        crossOrigin="anonymous"
+                        onLoad={(e) => {
+                          if (index === 0 || swiper?.activeIndex === index) {
+                            extractDominantColor(e.target);
+                          }
+                        }}
                         onError={(e) => {
                           e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"%3E%3Crect fill="%234299e1" width="400" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="60" fill="white"%3E📋%3C/text%3E%3C/svg%3E';
                         }}
@@ -78,20 +116,20 @@ export default function JobCard({
           ) : job.url ? (
             <PhotoView src={job.url}>
               <div className="w-full h-full cursor-pointer">
-                {/* Fondo blur usando background-image CSS */}
+                {/* Fondo con color dominante */}
                 <div
-                  className="absolute inset-0 w-full h-full blur-3xl scale-110"
+                  className="absolute inset-0 w-full h-full"
                   style={{
-                    backgroundImage: `url(${job.url})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
+                    backgroundColor: dominantColor
                   }}
                 />
                 {/* Imagen principal */}
                 <img
                   src={job.url}
                   alt={job.title || 'Imagen del trabajo'}
-                  className="relative w-full h-full object-cover z-10"
+                  className="relative w-full h-full object-contain z-10"
+                  crossOrigin="anonymous"
+                  onLoad={(e) => extractDominantColor(e.target)}
                   onError={(e) => {
                     e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"%3E%3Crect fill="%234299e1" width="400" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="60" fill="white"%3E📋%3C/text%3E%3C/svg%3E';
                   }}
@@ -99,7 +137,10 @@ export default function JobCard({
               </div>
             </PhotoView>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+            <div 
+              className="w-full h-full"
+              style={{ backgroundColor: dominantColor }}
+            ></div>
           )}
 
           {justSaved && (
