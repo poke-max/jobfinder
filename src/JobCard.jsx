@@ -60,7 +60,7 @@ return (
   >
     <div className="bg-white modal-card overflow-hidden relative flex flex-col h-screen">
       {/* Sección de Imagen - Altura fija 70% */}
-      <div className="relative w-full flex-1 overflow-visible flex-shrink-1">
+      <div className="relative w-full flex-1 overflow-hidden flex-shrink-1">
         {job.images && job.images.length > 0 ? (
           <Swiper
             direction="horizontal"
@@ -149,7 +149,7 @@ return (
         )}
 
         {/* ⭐ BOTONES CIRCULARES ⭐ */}
-        <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-40">
+        <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-90">
           <button
             onClick={onDismiss}
             className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center justify-center shadow-lg transition-all duration-300"
