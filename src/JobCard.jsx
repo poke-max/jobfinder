@@ -56,7 +56,7 @@ export default function JobCard({
                       <div
                         className="absolute inset-0 w-full h-full blur-2xl scale-110"
                         style={{
-                          backgroundImage: `url(${imageUrl})`,
+                          /* backgroundImage: `url(${imageUrl})`, */
                           backgroundSize: 'cover',
                           backgroundPosition: 'center'
                         }}
