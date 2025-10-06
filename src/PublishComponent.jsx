@@ -21,8 +21,8 @@ import { useAnimatedClose } from './hooks/useAnimatedClose';
 export default function PublishComponent({ userId, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [isClosing, setIsClosing] = useState(false);
   const { handleClose, getAnimationClass } = useAnimatedClose(onClose);
 
@@ -49,29 +49,43 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
   };
 
   const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    const remainingSlots = 4 - imageFiles.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+    
+    if (filesToAdd.length > 0) {
+      setImageFiles(prev => [...prev, ...filesToAdd]);
+      
+      filesToAdd.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    if (files.length > remainingSlots) {
+      alert(`Solo puedes subir hasta 4 imágenes. Se agregaron ${remainingSlots} de ${files.length} seleccionadas.`);
     }
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const removeImage = (index) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const uploadImage = async () => {
-    if (!imageFile) return '';
+  const uploadImages = async () => {
+    if (imageFiles.length === 0) return [];
     
-    const timestamp = Date.now();
-    const storageRef = ref(storage, `jobs/job_${timestamp}_${imageFile.name}`);
-    await uploadBytes(storageRef, imageFile);
-    return await getDownloadURL(storageRef);
+    const uploadPromises = imageFiles.map(async (file, index) => {
+      const timestamp = Date.now();
+      const storageRef = ref(storage, `jobs/${userId}_${timestamp}_${index}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    });
+    
+    return await Promise.all(uploadPromises);
   };
 
   const handleSubmit = async () => {
@@ -83,11 +97,12 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
     try {
       setLoading(true);
       
-      const imageUrl = await uploadImage();
+      const imageUrls = await uploadImages();
       
       const jobData = {
         ...formData,
-        url: imageUrl,
+        images: imageUrls,
+        url: imageUrls[0] || '',
         createdBy: userId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -113,9 +128,6 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
     }
   };
 
-  
-
-
   if (success) {
     return (
       <div className="absolute inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -135,8 +147,8 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
           <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary bg-opacity-10 rounded-xl">
-                  <FaBriefcase className="w-6 h-6 text-primary" />
+                <div className="p-3 bg-blue-500 bg-opacity-10 rounded-xl">
+                  <FaBriefcase className="w-6 h-6 text-blue-500" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Publicar Trabajo</h2>
@@ -153,45 +165,59 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
           </div>
 
           <div className="p-6 space-y-6">
-            {/* Image Upload */}
+            {/* Image Upload - Multiple Images */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Imagen del Trabajo
+                Imágenes del Trabajo (Hasta 4)
               </label>
-              {imagePreview ? (
-                <div className="relative">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="w-full h-48 object-cover rounded-xl border-2 border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-lg"
-                  >
-                    <FaTimes className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary cursor-pointer transition bg-gray-50">
-                  <FaImage className="w-12 h-12 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-500">Haz clic para subir una imagen</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                </label>
-              )}
+              
+              <div className="grid grid-cols-2 gap-4">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img 
+                      src={preview} 
+                      alt={`Preview ${index + 1}`} 
+                      className="w-full h-40 object-cover rounded-xl border-2 border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-lg"
+                    >
+                      <FaTimes className="w-3 h-3" />
+                    </button>
+                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-60 text-white text-xs rounded">
+                      {index + 1}/4
+                    </div>
+                  </div>
+                ))}
+                
+                {imagePreviews.length < 4 && (
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 cursor-pointer transition bg-gray-50">
+                    <FaImage className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-xs text-gray-500 text-center px-2">
+                      {imagePreviews.length === 0 ? 'Agregar imágenes' : 'Agregar más'}
+                    </span>
+                    <span className="text-xs text-gray-400 mt-1">
+                      {imagePreviews.length}/4
+                    </span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
             </div>
 
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaBriefcase className="text-primary" />
+                  <FaBriefcase className="text-blue-500" />
                   Título del Puesto *
                 </label>
                 <input
@@ -199,13 +225,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="Ej: Desarrollador Full Stack"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaBuilding className="text-primary" />
+                  <FaBuilding className="text-blue-500" />
                   Empresa
                 </label>
                 <input
@@ -213,7 +239,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.company}
                   onChange={(e) => handleInputChange('company', e.target.value)}
                   placeholder="Nombre de la empresa"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -221,7 +247,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             {/* Description */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaFileAlt className="text-primary" />
+                <FaFileAlt className="text-blue-500" />
                 Descripción *
               </label>
               <textarea
@@ -229,14 +255,14 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Describe el puesto y responsabilidades..."
                 rows="4"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
 
             {/* Requirements */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaFileAlt className="text-secondary" />
+                <FaFileAlt className="text-green-500" />
                 Requisitos
               </label>
               <textarea
@@ -244,7 +270,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 onChange={(e) => handleInputChange('requeriments', e.target.value)}
                 placeholder="Lista los requisitos y habilidades necesarias..."
                 rows="3"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
 
@@ -252,7 +278,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaMapMarkerAlt className="text-primary" />
+                  <FaMapMarkerAlt className="text-blue-500" />
                   Ciudad
                 </label>
                 <input
@@ -260,13 +286,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   placeholder="Ej: Asunción"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaMapMarkerAlt className="text-secondary" />
+                  <FaMapMarkerAlt className="text-green-500" />
                   Dirección
                 </label>
                 <input
@@ -274,7 +300,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.direction}
                   onChange={(e) => handleInputChange('direction', e.target.value)}
                   placeholder="Dirección específica"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -283,7 +309,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaDollarSign className="text-secondary" />
+                  <FaDollarSign className="text-green-500" />
                   Rango Salarial
                 </label>
                 <input
@@ -291,13 +317,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.salary_range}
                   onChange={(e) => handleInputChange('salary_range', e.target.value)}
                   placeholder="Ej: $2000 - $3000"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaUsers className="text-primary" />
+                  <FaUsers className="text-blue-500" />
                   Vacantes
                 </label>
                 <input
@@ -305,7 +331,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   min="1"
                   value={formData.vacancies}
                   onChange={(e) => handleInputChange('vacancies', parseInt(e.target.value) || 1)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -314,7 +340,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaEnvelope className="text-primary" />
+                  <FaEnvelope className="text-blue-500" />
                   Email de Contacto
                 </label>
                 <input
@@ -322,13 +348,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="contacto@empresa.com"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaPhone className="text-secondary" />
+                  <FaPhone className="text-green-500" />
                   Teléfono
                 </label>
                 <input
@@ -336,7 +362,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                   placeholder="+595 xxx xxx xxx"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -344,7 +370,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             {/* Website */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaGlobe className="text-primary" />
+                <FaGlobe className="text-blue-500" />
                 Sitio Web
               </label>
               <input
@@ -352,14 +378,14 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 value={formData.website}
                 onChange={(e) => handleInputChange('website', e.target.value)}
                 placeholder="https://www.empresa.com"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             {/* Position Type */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaBriefcase className="text-secondary" />
+                <FaBriefcase className="text-green-500" />
                 Tipo de Posición
               </label>
               <input
@@ -367,7 +393,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 value={formData.position}
                 onChange={(e) => handleInputChange('position', e.target.value)}
                 placeholder="Ej: Tiempo completo, Remoto"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -377,7 +403,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 type="checkbox"
                 checked={formData.isActive}
                 onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                className="w-5 h-5 rounded accent-primary"
+                className="w-5 h-5 rounded accent-blue-500"
               />
               <div>
                 <span className="text-sm font-semibold text-gray-700">Publicar como activo</span>
@@ -398,7 +424,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary-light transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

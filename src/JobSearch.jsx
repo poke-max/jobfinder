@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaTimes, FaMapMarkerAlt, FaDollarSign, FaClock, FaBriefcase, FaFilter, FaChevronDown, FaHeart, FaFileAlt } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaMapMarkerAlt, FaDollarSign, FaClock, FaBriefcase, FaFilter, FaChevronDown, FaStar, FaFileAlt } from 'react-icons/fa';
 import { collection, query, orderBy, getDocs, where, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase/firebase';
 import JobListItem from './JobListItem';
 import { MdArrowBackIos } from "react-icons/md";
 import { useAnimatedClose } from './hooks/useAnimatedClose';
 
-export default function JobSearch({ 
-  user, 
+export default function JobSearch({
+  user,
   mode = 'search', // 'search', 'favorites', 'published'
-  onClose 
+  onClose
 }) {
   const userId = user?.uid;
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,13 +36,14 @@ export default function JobSearch({
   ];
   const { handleClose, getAnimationClass } = useAnimatedClose(onClose);
 
+
   // Configuración según el modo
   const getModeConfig = () => {
-    switch(mode) {
+    switch (mode) {
       case 'favorites':
         return {
           title: 'Mis Favoritos',
-          icon: FaHeart,
+          icon: FaStar,
           emptyMessage: 'No tienes trabajos guardados',
           emptySubtitle: 'Los trabajos que guardes aparecerán aquí'
         };
@@ -85,74 +86,74 @@ export default function JobSearch({
       setLoading(true);
       let jobsData = [];
 
-    if (mode === 'favorites') {
-            // Cargar trabajos favoritos del usuario
-            const userDocRef = doc(db, 'users', userId);
-            const userDoc = await getDoc(userDocRef);
-            
-            if (userDoc.exists()) {
-              const savedJobIds = userDoc.data().savedJobs || [];
-              
-              if (savedJobIds.length > 0) {
-                // Validar y filtrar IDs válidos
-                const validJobIds = savedJobIds.filter(id => 
-                  id && typeof id === 'string' && id.trim().length > 0
-                );
-                
-                if (validJobIds.length > 0) {
-                  // Cargar cada trabajo guardado
-                  const jobPromises = validJobIds.map(async (jobId) => {
-                    try {
-                      const jobDocRef = doc(db, 'jobs', jobId);
-                      const jobDoc = await getDoc(jobDocRef);
-                      if (jobDoc.exists()) {
-                        return { id: jobDoc.id, ...jobDoc.data() };
-                      }
-                    } catch (error) {
-                      console.error(`Error loading job ${jobId}:`, error);
-                    }
-                    return null;
-                  });
-                  
-                  const jobsResults = await Promise.all(jobPromises);
-                  jobsData = jobsResults.filter(job => job !== null);
-                }
-              }
-            }
-          } else if (mode === 'published') {
-            // Cargar trabajos publicados por el usuario
-            const jobsRef = collection(db, 'jobs');
-            const q = query(
-              jobsRef, 
-              where('publisherId', '==', userId),
-              orderBy('createdAt', 'desc')
+      if (mode === 'favorites') {
+        // Cargar trabajos favoritos del usuario
+        const userDocRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const savedJobIds = userDoc.data().savedJobs || [];
+
+          if (savedJobIds.length > 0) {
+            // Validar y filtrar IDs válidos
+            const validJobIds = savedJobIds.filter(id =>
+              id && typeof id === 'string' && id.trim().length > 0
             );
-            const snapshot = await getDocs(q);
-            
-            jobsData = snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
-          } else {
-            // Modo búsqueda normal - cargar todos los trabajos
-            const jobsRef = collection(db, 'jobs');
-            const q = query(jobsRef, orderBy('createdAt', 'desc'));
-            const snapshot = await getDocs(q);
-            
-            jobsData = snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
+
+            if (validJobIds.length > 0) {
+              // Cargar cada trabajo guardado
+              const jobPromises = validJobIds.map(async (jobId) => {
+                try {
+                  const jobDocRef = doc(db, 'jobs', jobId);
+                  const jobDoc = await getDoc(jobDocRef);
+                  if (jobDoc.exists()) {
+                    return { id: jobDoc.id, ...jobDoc.data() };
+                  }
+                } catch (error) {
+                  console.error(`Error loading job ${jobId}:`, error);
+                }
+                return null;
+              });
+
+              const jobsResults = await Promise.all(jobPromises);
+              jobsData = jobsResults.filter(job => job !== null);
+            }
           }
-          
-          setJobs(jobsData);
-          setFilteredJobs(jobsData);
-          setLoading(false);
-        } catch (error) {
-          console.error('Error loading jobs:', error);
-          setLoading(false);
         }
-      };
+      } else if (mode === 'published') {
+        // Cargar trabajos publicados por el usuario
+        const jobsRef = collection(db, 'jobs');
+        const q = query(
+          jobsRef,
+          where('publisherId', '==', userId),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+
+        jobsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } else {
+        // Modo búsqueda normal - cargar todos los trabajos
+        const jobsRef = collection(db, 'jobs');
+        const q = query(jobsRef, orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+
+        jobsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      }
+
+      setJobs(jobsData);
+      setFilteredJobs(jobsData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      setLoading(false);
+    }
+  };
 
   const applyFilters = () => {
     let filtered = [...jobs];
@@ -160,7 +161,7 @@ export default function JobSearch({
     // Filtro de búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(job => 
+      filtered = filtered.filter(job =>
         job.title?.toLowerCase().includes(query) ||
         job.company?.toLowerCase().includes(query) ||
         job.description?.toLowerCase().includes(query) ||
@@ -171,7 +172,7 @@ export default function JobSearch({
     // Filtro de ubicación
     if (filters.location.trim()) {
       const location = filters.location.toLowerCase();
-      filtered = filtered.filter(job => 
+      filtered = filtered.filter(job =>
         job.location?.toLowerCase().includes(location) ||
         job.city?.toLowerCase().includes(location)
       );
@@ -199,7 +200,7 @@ export default function JobSearch({
 
     // Filtro de tipo de empleo
     if (filters.employmentType.length > 0) {
-      filtered = filtered.filter(job => 
+      filtered = filtered.filter(job =>
         filters.employmentType.includes(job.employmentType)
       );
     }
@@ -212,7 +213,7 @@ export default function JobSearch({
         '7d': 7 * 24 * 60 * 60 * 1000,
         '30d': 30 * 24 * 60 * 60 * 1000
       };
-      
+
       const range = timeRanges[filters.datePosted];
       if (range) {
         filtered = filtered.filter(job => {
@@ -227,13 +228,13 @@ export default function JobSearch({
 
   const formatTimeAgo = (date) => {
     if (!date) return 'Fecha desconocida';
-    
+
     const jobDate = date.toDate ? date.toDate() : new Date(date);
     const now = new Date();
     const diffMs = now - jobDate;
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffHours < 1) return 'Hace menos de 1h';
     if (diffHours < 24) return `Hace ${diffHours}h`;
     if (diffDays === 1) return 'Hace 1 día';
@@ -250,7 +251,7 @@ export default function JobSearch({
     }));
   };
 
-  const activeFiltersCount = 
+  const activeFiltersCount =
     (filters.location ? 1 : 0) +
     (filters.salaryMin > 0 ? 1 : 0) +
     (filters.employmentType.length > 0 ? 1 : 0) +
@@ -280,14 +281,14 @@ export default function JobSearch({
       {/* Header */}
       <div className="sticky top-0 bg-bg border-b border-gray-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <MdArrowBackIos className="w-5 h-5 text-gray-600" />
-          </button>
           <IconComponent className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-bold text-gray-800">{config.title}</h2>
+          <button
+            onClick={handleClose}
+            className="ml-auto p-2 hover:bg-gray-100 rounded-full transition"
+          >
+            <MdArrowBackIos className="w-5 h-5 text-gray-600 pt-2" />
+          </button>
         </div>
 
         {/* Search Bar - Solo en modo búsqueda */}
@@ -350,7 +351,7 @@ export default function JobSearch({
             <input
               type="text"
               value={filters.location}
-              onChange={(e) => setFilters({...filters, location: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, location: e.target.value })}
               placeholder="Ciudad o código postal"
               className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -363,7 +364,7 @@ export default function JobSearch({
                 min="5"
                 max="100"
                 value={filters.radius}
-                onChange={(e) => setFilters({...filters, radius: parseInt(e.target.value)})}
+                onChange={(e) => setFilters({ ...filters, radius: parseInt(e.target.value) })}
                 className="w-full accent-primary"
               />
             </div>
@@ -374,7 +375,7 @@ export default function JobSearch({
             <input
               type="checkbox"
               checked={filters.remote}
-              onChange={(e) => setFilters({...filters, remote: e.target.checked})}
+              onChange={(e) => setFilters({ ...filters, remote: e.target.checked })}
               className="w-5 h-5 rounded accent-primary"
             />
             <span className="text-sm text-gray-700">Solo trabajos remotos</span>
@@ -390,7 +391,7 @@ export default function JobSearch({
               <input
                 type="number"
                 value={filters.salaryMin}
-                onChange={(e) => setFilters({...filters, salaryMin: parseInt(e.target.value) || 0})}
+                onChange={(e) => setFilters({ ...filters, salaryMin: parseInt(e.target.value) || 0 })}
                 placeholder="Mínimo"
                 className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -398,7 +399,7 @@ export default function JobSearch({
               <input
                 type="number"
                 value={filters.salaryMax}
-                onChange={(e) => setFilters({...filters, salaryMax: parseInt(e.target.value) || 0})}
+                onChange={(e) => setFilters({ ...filters, salaryMax: parseInt(e.target.value) || 0 })}
                 placeholder="Máximo"
                 className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -416,11 +417,10 @@ export default function JobSearch({
                 <button
                   key={type}
                   onClick={() => toggleEmploymentType(type)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                    filters.employmentType.includes(type)
-                      ? 'bg-primary text-white'
-                      : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${filters.employmentType.includes(type)
+                    ? 'bg-primary text-white'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
                 >
                   {type}
                 </button>
@@ -438,12 +438,11 @@ export default function JobSearch({
               {dateOptions.map(option => (
                 <button
                   key={option.value}
-                  onClick={() => setFilters({...filters, datePosted: option.value})}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    filters.datePosted === option.value
-                      ? 'bg-secondary text-gray-800'
-                      : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
+                  onClick={() => setFilters({ ...filters, datePosted: option.value })}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filters.datePosted === option.value
+                    ? 'bg-secondary text-gray-800'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -466,12 +465,12 @@ export default function JobSearch({
       {/* Search Results */}
       <div className="p-4">
         <div className="mb-4 text-sm text-gray-600 font-medium">
-          {searchQuery 
-            ? `${filteredJobs.length} resultados para "${searchQuery}"` 
+          {searchQuery
+            ? `${filteredJobs.length} resultados para "${searchQuery}"`
             : `${filteredJobs.length} ${mode === 'favorites' ? 'favoritos' : mode === 'published' ? 'publicaciones' : 'trabajos disponibles'}`
           }
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -503,7 +502,7 @@ export default function JobSearch({
             onClick={onClose}
             className="w-full py-4 bg-primary hover:bg-primary-light text-white rounded-xl font-semibold transition shadow-lg"
           >
-            {mode === 'search' 
+            {mode === 'search'
               ? `Ver ${filteredJobs.length} Resultado${filteredJobs.length !== 1 ? 's' : ''} en Feed`
               : 'Cerrar'
             }
