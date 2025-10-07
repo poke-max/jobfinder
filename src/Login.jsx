@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
-import firebaseConfig from './firebase/firebaseConfig';
+import { FaFacebook } from 'react-icons/fa';
+import { MdWorkspacePremium } from 'react-icons/md';
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Asumiendo que ya tienes Firebase inicializado en otro lugar
+const auth = getAuth();
 const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
 export default function Login({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,27 @@ export default function Login({ onLoginSuccess }) {
       
       console.log('Usuario autenticado:', user.displayName);
       
-      // Llamar callback de éxito
+      if (onLoginSuccess) {
+        onLoginSuccess(user);
+      }
+    } catch (err) {
+      console.error('Error en login:', err);
+      setError(getErrorMessage(err.code));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      const user = result.user;
+      
+      console.log('Usuario autenticado:', user.displayName);
+      
       if (onLoginSuccess) {
         onLoginSuccess(user);
       }
@@ -49,132 +70,108 @@ export default function Login({ onLoginSuccess }) {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex flex-col items-center justify-between p-6"
       style={{
-        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
+        background: 'linear-gradient(180deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
       }}
     >
-      <div className="w-full max-w-md">
-        {/* Tarjeta de Login */}
-        <div 
-          className="rounded-3xl shadow-2xl p-8 "
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
-          }}
-        >
-          {/* Logo/Icono */}
-          <div className="text-center mb-8">
-            <div 
-              className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-lg"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
-              }}
-            >
-              <span className="text-4xl">💼</span>
-            </div>
-            <h1 
-              className="text-3xl font-bold mb-2"
-              style={{ color: 'var(--color-primary-dark)' }}
-            >
-              Bienvenido
-            </h1>
-            <p className="text-gray-600">
-              Encuentra tu próximo trabajo ideal
-            </p>
+      {/* Logo y título superior */}
+      <div className="w-full max-w-md flex-1 flex flex-col justify-center pt-12">
+        <div className="text-center mb-12">
+          <div 
+            className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 shadow-2xl bg-white"
+          >
+            <MdWorkspacePremium className="text-6xl" style={{ color: 'var(--color-primary)' }} />
           </div>
+          <h1 className="text-white text-5xl font-bold tracking-tight">
+            jobfinder
+          </h1>
+        </div>
 
-          {/* Botón de Google */}
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full bg-white border-2 rounded-full py-4 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed group"
-            style={{
-              borderColor: loading ? '#e5e7eb' : 'var(--color-primary-light)'
+        {/* Mensaje de error */}
+        {error && (
+          <div 
+            className="mb-4 p-4 rounded-2xl text-sm text-center bg-white shadow-lg"
+            style={{ 
+              color: 'var(--color-primary-dark)',
+              animation: 'shake 0.3s ease-in-out'
             }}
           >
-            {loading ? (
-              <>
-                <div 
-                  className="w-6 h-6 border-3 rounded-full animate-spin"
-                  style={{ 
-                    border: '3px solid var(--color-primary)',
-                    borderTopColor: 'transparent'
-                  }}
-                ></div>
-                <span className="text-gray-700 font-semibold">
-                  Iniciando sesión...
-                </span>
-              </>
-            ) : (
-              <>
-                <FcGoogle className="text-2xl" />
-                <span 
-                  className="font-semibold transition-colors"
-                  style={{ color: 'var(--color-primary-dark)' }}
-                >
-                  Continuar con Google
-                </span>
-              </>
-            )}
-          </button>
+            {error}
+          </div>
+        )}
+      </div>
 
-          {/* Mensaje de error */}
-          {error && (
-            <div 
-              className="mt-4 p-4 rounded-xl text-sm text-center"
-              style={{ 
-                backgroundColor: 'rgba(248, 87, 138, 0.1)',
-                color: 'var(--color-primary-dark)',
-                border: '1px solid var(--color-primary-light)',
-                animation: 'shake 0.3s ease-in-out'
-              }}
-            >
-              {error}
-            </div>
+      {/* Botones de login en la parte inferior */}
+      <div className="w-full max-w-md space-y-4 pb-8">
+        {/* Botón de Google */}
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full bg-white rounded-full py-4 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          {loading ? (
+            <>
+              <div 
+                className="w-6 h-6 border-3 rounded-full animate-spin"
+                style={{ 
+                  border: '3px solid var(--color-primary)',
+                  borderTopColor: 'transparent'
+                }}
+              ></div>
+              <span className="text-gray-700 font-bold text-lg">
+                Iniciando sesión...
+              </span>
+            </>
+          ) : (
+            <>
+              <FcGoogle className="text-2xl" />
+              <span className="font-bold text-lg text-gray-800">
+                Continuar con Google
+              </span>
+            </>
           )}
+        </button>
 
-          {/* Texto legal */}
-          <p className="text-xs text-gray-500 text-center mt-6">
-            Al continuar, aceptas nuestros{' '}
-            <a 
-              href="#" 
-              className="underline hover:no-underline"
-              style={{ color: 'var(--color-primary)' }}
-            >
-              Términos de Servicio
-            </a>
-            {' '}y{' '}
-            <a 
-              href="#" 
-              className="underline hover:no-underline"
-              style={{ color: 'var(--color-primary)' }}
-            >
-              Política de Privacidad
-            </a>
-          </p>
-        </div>
+        {/* Botón de Facebook */}
+        <button
+          onClick={handleFacebookLogin}
+          disabled={loading}
+          className="w-full bg-white rounded-full py-4 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          <FaFacebook className="text-2xl text-blue-600" />
+          <span className="font-bold text-lg text-gray-800">
+            Continuar con Facebook
+          </span>
+        </button>
 
-        {/* Decoraciones */}
-        <div className="mt-8 flex justify-center gap-2">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="w-2 h-2 rounded-full animate-pulse"
-              style={{
-                backgroundColor: i === 1 ? 'var(--color-secondary)' : 'var(--color-primary)',
-                animationDelay: `${i * 0.2}s`
-              }}
-            ></div>
-          ))}
-        </div>
+        {/* Enlace de problemas */}
+        <button className="w-full text-white text-center py-3 font-semibold hover:underline transition-all">
+          ¿No consigues iniciar sesión?
+        </button>
+
+        {/* Texto legal */}
+        <p className="text-xs text-white text-center px-4 opacity-90 leading-relaxed mt-4">
+          Al pulsar "Iniciar sesión", estás aceptando nuestros{' '}
+          <a href="#" className="underline font-semibold">Términos</a>. Obtén más información sobre cómo procesamos tus datos en nuestra{' '}
+          <a href="https://www.termsfeed.com/live/67a514a4-84e9-456e-b348-b21756fcdef4" className="underline font-semibold">Política de privacidad</a> y{' '}
+          <a href="#" className="underline font-semibold">Política de cookies</a>.
+        </p>
       </div>
 
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+          50% { transform: translateX(5px); }
+          75% { transform: translateX(-5px); }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 3s linear infinite;
         }
       `}</style>
     </div>
