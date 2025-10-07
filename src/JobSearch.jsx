@@ -1,43 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaTimes, FaMapMarkerAlt, FaDollarSign, FaClock, FaBriefcase, FaFilter, FaChevronDown, FaStar, FaFileAlt } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaStar, FaFileAlt, FaThLarge, FaList } from 'react-icons/fa';
 import { collection, query, orderBy, getDocs, where, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase/firebase';
 import JobListItem from './JobListItem';
 import { MdArrowBackIos } from "react-icons/md";
 import { useAnimatedClose } from './hooks/useAnimatedClose';
+import { PhotoProvider, PhotoView } from 'react-photo-view';
+import 'react-photo-view/dist/react-photo-view.css';
 
 export default function JobSearch({
   user,
-  mode = 'search', // 'search', 'favorites', 'published'
+  mode = 'search',
   onClose
 }) {
   const userId = user?.uid;
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    location: '',
-    radius: 25,
-    salaryMin: 0,
-    salaryMax: 100000,
-    employmentType: [],
-    datePosted: 'all',
-    remote: false
-  });
-
-  const employmentTypes = ['Tiempo completo', 'Medio tiempo', 'Freelance', 'Pasantía'];
-  const dateOptions = [
-    { value: 'all', label: 'Cualquier momento' },
-    { value: '24h', label: 'Últimas 24 horas' },
-    { value: '7d', label: 'Última semana' },
-    { value: '30d', label: 'Último mes' }
-  ];
+  const [viewMode, setViewMode] = useState('list'); // 'list' o 'grid'
   const { handleClose, getAnimationClass } = useAnimatedClose(onClose);
 
-
-  // Configuración según el modo
   const getModeConfig = () => {
     switch (mode) {
       case 'favorites':
@@ -66,15 +49,13 @@ export default function JobSearch({
 
   const config = getModeConfig();
 
-  // Cargar trabajos según el modo
   useEffect(() => {
     loadJobs();
   }, [mode, userId]);
 
-  // Aplicar filtros
   useEffect(() => {
     applyFilters();
-  }, [searchQuery, filters, jobs]);
+  }, [searchQuery, jobs]);
 
   const loadJobs = async () => {
     if (!userId && (mode === 'favorites' || mode === 'published')) {
@@ -87,7 +68,6 @@ export default function JobSearch({
       let jobsData = [];
 
       if (mode === 'favorites') {
-        // Cargar trabajos favoritos del usuario
         const userDocRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userDocRef);
 
@@ -95,13 +75,11 @@ export default function JobSearch({
           const savedJobIds = userDoc.data().savedJobs || [];
 
           if (savedJobIds.length > 0) {
-            // Validar y filtrar IDs válidos
             const validJobIds = savedJobIds.filter(id =>
               id && typeof id === 'string' && id.trim().length > 0
             );
 
             if (validJobIds.length > 0) {
-              // Cargar cada trabajo guardado
               const jobPromises = validJobIds.map(async (jobId) => {
                 try {
                   const jobDocRef = doc(db, 'jobs', jobId);
@@ -121,7 +99,6 @@ export default function JobSearch({
           }
         }
       } else if (mode === 'published') {
-        // Cargar trabajos publicados por el usuario
         const jobsRef = collection(db, 'jobs');
         const q = query(
           jobsRef,
@@ -135,7 +112,6 @@ export default function JobSearch({
           ...doc.data()
         }));
       } else {
-        // Modo búsqueda normal - cargar todos los trabajos
         const jobsRef = collection(db, 'jobs');
         const q = query(jobsRef, orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
@@ -158,7 +134,6 @@ export default function JobSearch({
   const applyFilters = () => {
     let filtered = [...jobs];
 
-    // Filtro de búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(job =>
@@ -167,60 +142,6 @@ export default function JobSearch({
         job.description?.toLowerCase().includes(query) ||
         job.skills?.some(skill => skill.toLowerCase().includes(query))
       );
-    }
-
-    // Filtro de ubicación
-    if (filters.location.trim()) {
-      const location = filters.location.toLowerCase();
-      filtered = filtered.filter(job =>
-        job.location?.toLowerCase().includes(location) ||
-        job.city?.toLowerCase().includes(location)
-      );
-    }
-
-    // Filtro de remoto
-    if (filters.remote) {
-      filtered = filtered.filter(job => job.remote === true);
-    }
-
-    // Filtro de salario
-    if (filters.salaryMin > 0) {
-      filtered = filtered.filter(job => {
-        const salary = job.salary || job.salaryMin || 0;
-        return salary >= filters.salaryMin;
-      });
-    }
-
-    if (filters.salaryMax < 100000) {
-      filtered = filtered.filter(job => {
-        const salary = job.salary || job.salaryMax || 0;
-        return salary <= filters.salaryMax;
-      });
-    }
-
-    // Filtro de tipo de empleo
-    if (filters.employmentType.length > 0) {
-      filtered = filtered.filter(job =>
-        filters.employmentType.includes(job.employmentType)
-      );
-    }
-
-    // Filtro de fecha
-    if (filters.datePosted !== 'all') {
-      const now = new Date();
-      const timeRanges = {
-        '24h': 24 * 60 * 60 * 1000,
-        '7d': 7 * 24 * 60 * 60 * 1000,
-        '30d': 30 * 24 * 60 * 60 * 1000
-      };
-
-      const range = timeRanges[filters.datePosted];
-      if (range) {
-        filtered = filtered.filter(job => {
-          const jobDate = job.createdAt?.toDate ? job.createdAt.toDate() : new Date(job.createdAt);
-          return (now - jobDate) <= range;
-        });
-      }
     }
 
     setFilteredJobs(filtered);
@@ -242,34 +163,6 @@ export default function JobSearch({
     return 'Hace más de un mes';
   };
 
-  const toggleEmploymentType = (type) => {
-    setFilters(prev => ({
-      ...prev,
-      employmentType: prev.employmentType.includes(type)
-        ? prev.employmentType.filter(t => t !== type)
-        : [...prev.employmentType, type]
-    }));
-  };
-
-  const activeFiltersCount =
-    (filters.location ? 1 : 0) +
-    (filters.salaryMin > 0 ? 1 : 0) +
-    (filters.employmentType.length > 0 ? 1 : 0) +
-    (filters.datePosted !== 'all' ? 1 : 0) +
-    (filters.remote ? 1 : 0);
-
-  const resetFilters = () => {
-    setFilters({
-      location: '',
-      radius: 25,
-      salaryMin: 0,
-      salaryMax: 100000,
-      employmentType: [],
-      datePosted: 'all',
-      remote: false
-    });
-  };
-
   const handleJobClick = (job) => {
     console.log('Job clicked:', job);
   };
@@ -277,194 +170,79 @@ export default function JobSearch({
   const IconComponent = config.icon;
 
   return (
-    <div className={`absolute inset-0 mx-auto max-w-4xl bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
+    <div className={`absolute pb-8 inset-0 mx-auto max-w-7xl bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
       {/* Header */}
       <div className="sticky top-0 bg-bg border-b border-gray-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
           <IconComponent className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-bold text-gray-800">{config.title}</h2>
-          <button
-            onClick={handleClose}
-            className="ml-auto p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <MdArrowBackIos className="w-5 h-5 text-gray-600 pt-2" />
-          </button>
-        </div>
-
-        {/* Search Bar - Solo en modo búsqueda */}
-        {mode === 'search' && (
-          <>
-            <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Puesto, empresa, o habilidad..."
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+          
+          {/* Botones de vista */}
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-white shadow-sm text-primary'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                aria-label="Vista de lista"
+              >
+                <FaList className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-white shadow-sm text-primary'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                aria-label="Vista de cuadrícula"
+              >
+                <FaThLarge className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Filter Toggle */}
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="mt-3 w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition"
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition"
             >
-              <div className="flex items-center gap-2">
-                <FaFilter className="w-4 h-4 text-primary" />
-                <span className="text-gray-700">Filtros</span>
-                {activeFiltersCount > 0 && (
-                  <span className="bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </div>
-              <FaChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+              <FaTimes className="w-5 h-5 text-gray-600" />
             </button>
-          </>
-        )}
-
-        {/* Search bar simple para favoritos y publicados */}
-        {(mode === 'favorites' || mode === 'published') && (
-          <div className="relative">
-            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar en esta lista..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-            />
           </div>
-        )}
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative max-w-lg mx-auto">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={mode === 'search' ? 'Puesto, empresa, o habilidad...' : 'Buscar...'}
+            className="w-full h-12 pl-12 pr-12 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
+          />
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            {loading && (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+            )}
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Limpiar búsqueda"
+              >
+                <FaTimes className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Filters Panel - Solo en modo búsqueda */}
-      {mode === 'search' && showFilters && (
-        <div className="p-4 space-y-6 bg-gray-50 border-b border-gray-200">
-          {/* Location */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-gray-700">
-              <FaMapMarkerAlt className="text-primary" />
-              Ubicación
-            </label>
-            <input
-              type="text"
-              value={filters.location}
-              onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-              placeholder="Ciudad o código postal"
-              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <div className="mt-3">
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>Radio: {filters.radius} km</span>
-              </div>
-              <input
-                type="range"
-                min="5"
-                max="100"
-                value={filters.radius}
-                onChange={(e) => setFilters({ ...filters, radius: parseInt(e.target.value) })}
-                className="w-full accent-primary"
-              />
-            </div>
-          </div>
-
-          {/* Remote Option */}
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={filters.remote}
-              onChange={(e) => setFilters({ ...filters, remote: e.target.checked })}
-              className="w-5 h-5 rounded accent-primary"
-            />
-            <span className="text-sm text-gray-700">Solo trabajos remotos</span>
-          </label>
-
-          {/* Salary Range */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-gray-700">
-              <FaDollarSign className="text-secondary" />
-              Rango Salarial
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="number"
-                value={filters.salaryMin}
-                onChange={(e) => setFilters({ ...filters, salaryMin: parseInt(e.target.value) || 0 })}
-                placeholder="Mínimo"
-                className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <span className="text-gray-400">-</span>
-              <input
-                type="number"
-                value={filters.salaryMax}
-                onChange={(e) => setFilters({ ...filters, salaryMax: parseInt(e.target.value) || 0 })}
-                placeholder="Máximo"
-                className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-
-          {/* Employment Type */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-gray-700">
-              <FaBriefcase className="text-primary" />
-              Tipo de Empleo
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {employmentTypes.map(type => (
-                <button
-                  key={type}
-                  onClick={() => toggleEmploymentType(type)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${filters.employmentType.includes(type)
-                    ? 'bg-primary text-white'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                    }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Date Posted */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-gray-700">
-              <FaClock className="text-secondary" />
-              Fecha de Publicación
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {dateOptions.map(option => (
-                <button
-                  key={option.value}
-                  onClick={() => setFilters({ ...filters, datePosted: option.value })}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filters.datePosted === option.value
-                    ? 'bg-secondary text-gray-800'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                    }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Reset Filters */}
-          {activeFiltersCount > 0 && (
-            <button
-              onClick={resetFilters}
-              className="w-full py-3 text-red-500 hover:bg-red-50 rounded-lg transition font-medium"
-            >
-              Limpiar Filtros
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Search Results */}
       <div className="p-4">
-        <div className="mb-4 text-sm text-gray-600 font-medium">
+        <div className="mb-2 text-sm text-gray-600 font-medium">
           {searchQuery
             ? `${filteredJobs.length} resultados para "${searchQuery}"`
             : `${filteredJobs.length} ${mode === 'favorites' ? 'favoritos' : mode === 'published' ? 'publicaciones' : 'trabajos disponibles'}`
@@ -481,34 +259,58 @@ export default function JobSearch({
             <p className="text-lg mb-2">{config.emptyMessage}</p>
             <p className="text-sm">{config.emptySubtitle}</p>
           </div>
+        ) : viewMode === 'list' ? (
+          // Vista de Lista
+          <div className="space-y-3">
+            {filteredJobs.map((job) => (
+              <JobListItem
+                key={job.id}
+                job={job}
+                formatTimeAgo={formatTimeAgo}
+                onClick={() => handleJobClick(job)}
+                showPublisherBadge={mode === 'published'}
+              />
+            ))}
+          </div>
         ) : (
-          /* Result Cards */
-          filteredJobs.map((job) => (
-            <JobListItem
-              key={job.id}
-              job={job}
-              formatTimeAgo={formatTimeAgo}
-              onClick={() => handleJobClick(job)}
-              showPublisherBadge={mode === 'published'}
-            />
-          ))
+          // Vista de Cuadrícula con react-photo-view
+          <PhotoProvider
+            maskOpacity={0.9}
+            bannerVisible={false}
+          >
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-2 space-y-3">
+              {filteredJobs.map((job) => {
+                const imageUrl = job.url || job.flyerImage || job.image || '/placeholder-flyer.jpg';
+                return (
+                  <PhotoView key={job.id} src={imageUrl}>
+                    <div className="cursor-pointer group relative break-inside-avoid overflow-hidden shadow-md hover:shadow-xl transition-all mb-3">
+                      <img
+                        src={imageUrl}
+                        alt={job.title || 'Flyer'}
+                        className="w-full h-auto object-contain group-hover:opacity-95 transition-opacity duration-300"
+                        loading="lazy"
+                      />
+                      {/* Overlay con info básica al hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                          <p className="font-semibold text-sm line-clamp-2">
+                            {job.title}
+                          </p>
+                          {job.company && (
+                            <p className="text-xs opacity-90 line-clamp-1">
+                              {job.company}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </PhotoView>
+                );
+              })}
+            </div>
+          </PhotoProvider>
         )}
       </div>
-
-      {/* Bottom Action */}
-      {filteredJobs.length > 0 && (
-        <div className="sticky bottom-14 p-4 bg-gradient-to-t from-bg via-bg to-transparent">
-          <button
-            onClick={onClose}
-            className="w-full py-4 bg-primary hover:bg-primary-light text-white rounded-xl font-semibold transition shadow-lg"
-          >
-            {mode === 'search'
-              ? `Ver ${filteredJobs.length} Resultado${filteredJobs.length !== 1 ? 's' : ''} en Feed`
-              : 'Cerrar'
-            }
-          </button>
-        </div>
-      )}
     </div>
   );
 }
