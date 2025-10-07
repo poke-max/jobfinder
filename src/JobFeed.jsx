@@ -563,6 +563,7 @@ export default function JobFeed({ user, onLogout }) {
         activeTab={currentTab}
         onTabChange={handleTabChange}
         onLogout={onLogout}  // ← Agrega esto
+        user={user}
       />
     </>
   );

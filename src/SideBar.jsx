@@ -3,9 +3,7 @@ import {
   FaHome, FaComments, FaBookmark, FaMapMarkedAlt , 
   FaUser, FaBars, FaTimes, FaStar, FaSignOutAlt 
 } from 'react-icons/fa';
-
 import { FaSquarePlus } from "react-icons/fa6";
-
 import {
   FaRegComments,
   FaRegBookmark,
@@ -14,13 +12,14 @@ import {
   FaRegStar,
   FaRegUser
 } from 'react-icons/fa';
-
 import { signOut } from 'firebase/auth';
 import { auth } from './firebase/firebase';
+import UserProfile from './UserProfile'; // Importa el componente
 
-export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout }) {
+export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout, user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false); // Nuevo estado
 
   const mobileItems = [
     { id: 'inicio', icon: FaHome, iconReg: FaHome, label: 'Inicio' },
@@ -31,7 +30,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
 
   const desktopItems = [
     { id: 'inicio', icon: FaHome, iconReg: FaHome, label: 'Inicio' },
-   /*  { id: 'mensajes', icon: FaComments, iconReg: FaRegComments, label: 'Mensajes' }, */
     { id: 'favoritos', icon: FaStar, iconReg: FaRegStar, label: 'Favoritos' },
     { id: 'mapa', icon: FaMapMarkedAlt, iconReg: FaRegMap, label: 'Explorar' },
     { id: 'publicar', icon: FaSquarePlus , iconReg: FaRegPlusSquare, label: 'Publicar' }
@@ -46,25 +44,28 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
     try {
       setShowProfileMenu(false);
       await signOut(auth);
-     
-      // Opcional: Recargar la página para limpiar el estado
-      // window.location.reload();
     } catch (error) {
-      
       alert('Error al cerrar sesión. Intenta nuevamente.');
     }
+  };
+
+  const handleOpenProfile = () => {
+    setShowProfileMenu(false);
+    setShowProfileModal(true);
+  };
+
+  const handleMyPublications = () => {
+    onTabChange?.('mis-publicaciones'); // O la pestaña que necesites
   };
 
   return (
     <>
       {/* Sidebar Desktop */}
       <div className="hidden lg:flex lg:fixed lg:left-0 lg:top-0 lg:h-full lg:w-20 lg:bg-white lg:shadow-md lg:flex-col lg:z-200 lg:items-center lg:py-6">
-        {/* Logo */}
         <div className="mb-8">
           <FaHome className="w-8 h-8 text-primary" />
         </div>
 
-        {/* Navigation Items */}
         <nav className="flex-1 flex flex-col items-center gap-6">
           {desktopItems.map((item) => {
             const isActive = activeTab === item.id;
@@ -93,7 +94,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
           })}
         </nav>
 
-        {/* Profile Button at Bottom */}
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -110,7 +110,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
             )}
           </button>
 
-          {/* Profile Menu Dropdown */}
           {showProfileMenu && (
             <>
               <div 
@@ -119,10 +118,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
               />
               <div className="absolute bottom-0 left-full ml-2 mb-0 bg-white rounded-lg shadow-xl border border-gray-200 py-2 w-48 z-40">
                 <button
-                  onClick={() => {
-                    handleItemClick('perfil');
-                    setShowProfileMenu(false);
-                  }}
+                  onClick={handleOpenProfile}
                   className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <FaUser className="w-4 h-4" />
@@ -143,15 +139,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
       </div>
 
       {/* Bottom Navigation Mobile */}
-      <div className="
-      lg:hidden
-      fixed bottom-0 
-      left-0 right-0 
-      bg-white 
-      shadow-2xl 
-      z-60 rounded-t-3xl 
-      pb-[env(safe-area-inset-bottom)] h-[var(--altura-barra)] 
-      ">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-60 rounded-t-3xl pb-[env(safe-area-inset-bottom)] h-[var(--altura-barra)]">
         <div className="flex items-center justify-around px-4 h-full">
           {mobileItems.map((item) => {
             const isActive = activeTab === item.id;
@@ -170,7 +158,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
             );
           })}
           
-          {/* Profile Button Mobile */}
           <div className="relative">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -181,7 +168,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
               {activeTab === 'perfil' ? <FaUser className="text-2xl mb-0" /> : <FaRegUser className="text-2xl mb-0" />}
             </button>
 
-            {/* Profile Menu Dropdown Mobile */}
             {showProfileMenu && (
               <>
                 <div 
@@ -190,10 +176,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
                 />
                 <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 py-2 w-48 z-50">
                   <button
-                    onClick={() => {
-                      handleItemClick('perfil');
-                      setShowProfileMenu(false);
-                    }}
+                    onClick={handleOpenProfile}
                     className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <FaUser className="w-4 h-4" />
@@ -213,6 +196,15 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
           </div>
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <UserProfile 
+          onClose={() => setShowProfileModal(false)}
+          onMyPublications={handleMyPublications}
+          user={user}
+        />
+      )}
 
       {/* Slide Menu Mobile */}
       {isOpen && (
@@ -245,7 +237,6 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
         </>
       )}
 
-      {/* Spacer */}
       <div className="hidden lg:block lg:w-20" />
     </>
   );

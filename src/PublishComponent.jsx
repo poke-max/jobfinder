@@ -430,9 +430,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                     </div>
                     
                     <div className="p-4 bg-gray-50 border-t border-gray-200">
-                      <p className="text-sm text-gray-600 mb-3">
-                        Haz clic en el mapa o arrastra el marcador para seleccionar la ubicación exacta
-                      </p>
+
                       <div className="flex gap-3">
                         <button
                           onClick={() => setShowMap(false)}
