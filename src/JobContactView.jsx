@@ -14,7 +14,7 @@ export default function JobContactView({ job, onClose }) {
   const hasContactInfo = job?.email || job?.phoneNumber || job?.website;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ height: '100dvh' }}>
       <div className="bg-white w-full modal-card flex flex-col animate-slideUp">
         {/* Header */}
         <div className="flex items-center bg-primary justify-between p-4 px-5 border-b border-gray-200">
