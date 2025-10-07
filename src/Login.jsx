@@ -88,7 +88,7 @@ export default function Login({ onLoginSuccess }) {
           <h1 className="text-white text-5xl font-bold tracking-tight mb-3">
             jobfinder
           </h1>
-          <p className="text-white text-lg font-medium opacity-90">
+          <p className="text-white text-md font-medium opacity-90">
             Encuentra empleos en todo el Paraguay
           </p>
         </div>
