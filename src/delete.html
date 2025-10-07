@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminación de Datos de Usuario - jobfinder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #FF6B9D 0%, #C94B7D 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            padding: 40px;
+            width: 100%;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF6B9D 0%, #C94B7D 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+        
+        h1 {
+            color: #FF6B9D;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        h2 {
+            color: #333;
+            margin: 30px 0 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 24px;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        li {
+            margin-bottom: 12px;
+            color: #555;
+        }
+        
+        .email-link {
+            background: linear-gradient(135deg, #FF6B9D 0%, #C94B7D 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .email-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 157, 0.3);
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        strong {
+            color: #FF6B9D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">💼</div>
+        <h1>jobfinder</h1>
+        <p class="subtitle">Eliminación de Datos de Usuario</p>
+        
+        <h2><span class="icon">🗑️</span> ¿Cómo eliminar tus datos?</h2>
+        
+        <div class="steps">
+            <p><strong>Opción 1: Desde la aplicación</strong></p>
+            <ol>
+                <li>Inicia sesión en jobfinder</li>
+                <li>Ve a <strong>Configuración</strong> o <strong>Perfil</strong></li>
+                <li>Selecciona <strong>"Eliminar cuenta"</strong></li>
+                <li>Confirma la eliminación</li>
+            </ol>
+        </div>
+        
+        <div class="steps">
+            <p><strong>Opción 2: Por correo electrónico</strong></p>
+            <ol>
+                <li>Envía un email a: <strong>soporte@jobfinder.com</strong></li>
+                <li>Asunto: "Solicitud de eliminación de datos"</li>
+                <li>Incluye tu nombre completo y email registrado</li>
+                <li>Procesaremos tu solicitud en un máximo de 30 días</li>
+            </ol>
+        </div>
+        
+        <center>
+            <a href="mailto:soporte@jobfinder.com?subject=Solicitud de eliminación de datos" class="email-link">
+                📧 Enviar solicitud por email
+            </a>
+        </center>
+        
+        <div class="info-box">
+            <strong>ℹ️ ¿Qué datos se eliminan?</strong><br>
+            Al eliminar tu cuenta, se eliminará permanentemente:
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li>Tu perfil de usuario</li>
+                <li>Tu nombre y foto de perfil</li>
+                <li>Tu dirección de email</li>
+                <li>Historial de publicaciones y postulaciones</li>
+                <li>Cualquier otro dato personal asociado</li>
+            </ul>
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ Importante:</strong><br>
+            Esta acción es <strong>irreversible</strong>. Una vez eliminados tus datos, no podremos recuperarlos. Si deseas volver a usar jobfinder, deberás crear una nueva cuenta.
+        </div>
+        
+        <h2><span class="icon">⏱️</span> Tiempo de procesamiento</h2>
+        <p style="margin-bottom: 20px; color: #555;">
+            Las solicitudes de eliminación se procesan en un plazo máximo de <strong>30 días hábiles</strong>. 
+            Recibirás una confirmación por email cuando el proceso esté completo.
+        </p>
+        
+        <h2><span class="icon">📞</span> ¿Necesitas ayuda?</h2>
+        <p style="color: #555;">
+            Si tienes dudas sobre el proceso de eliminación de datos, contáctanos en: 
+            <strong>soporte@jobfinder.com</strong>
+        </p>
+        
+        <div class="footer">
+            <p>© 2024 jobfinder - Todos los derechos reservados</p>
+            <p style="margin-top: 5px;">
+                <a href="#" style="color: #FF6B9D; text-decoration: none;">Política de Privacidad</a> | 
+                <a href="#" style="color: #FF6B9D; text-decoration: none;">Términos de Servicio</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
