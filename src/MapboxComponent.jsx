@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { FaMapMarkerAlt, FaStar, FaHome, FaBriefcase, FaLayerGroup, FaTimes, FaLocationArrow, FaChevronDown, FaDollarSign, FaEye } from 'react-icons/fa';
-
+import { MdMyLocation } from "react-icons/md";
 export default function MapboxComponent({ onClose }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -253,22 +253,22 @@ export default function MapboxComponent({ onClose }) {
   const activeCount = Object.values(activeViews).filter(Boolean).length;
 
   return (
-    <div className="absolute inset-0 bg-gray-100 z-50">
+    <div className="fixed w-full h-full flex bg-gray-100 z-50 animate-fadeIn">
 
       {/* Mapa */}
-      <div ref={mapContainerRef} className="w-full h-full" />
+      <div ref={mapContainerRef} className="w-full h-full flex" />
 
       {/* Botón Mi Ubicación */}
       <button
         onClick={getUserLocation}
-        className="absolute bottom-20 right-4 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition z-10"
+        className="absolute bottom-20 right-2 bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-gray-50 transition disabled:opacity-50 z-10"
         title="Mi ubicación"
       >
-        <FaLocationArrow className="text-blue-600 text-xl" />
+        <MdMyLocation className={`w-8 h-8`} />
       </button>
 
       {/* Selector de Disponibilidad */}
-      <div className="absolute bottom-4 left-4 z-10">
+      <div className="absolute bottom-20 left-4 z-10">
         <button
           onClick={() => setShowViewOptions(!showViewOptions)}
           className="bg-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-2 hover:shadow-xl transition"
@@ -309,7 +309,7 @@ export default function MapboxComponent({ onClose }) {
       </div>
 
       {/* Selector de Estilo de Mapa */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 left-4 z-10">
         <button
           onClick={() => setShowMapStyles(!showMapStyles)}
           className="bg-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-2 hover:shadow-xl transition"

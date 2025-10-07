@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaTimes, FaStar, FaFileAlt, FaThLarge, FaList } from 'react-icons/fa';
-import { collection, query, orderBy, getDocs, where, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, where, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase/firebase';
 import JobListItem from './JobListItem';
+import JobCard from './JobCard';
 import { MdArrowBackIos } from "react-icons/md";
 import { useAnimatedClose } from './hooks/useAnimatedClose';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
@@ -18,7 +19,10 @@ export default function JobSearch({
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('list'); // 'list' o 'grid'
+  const [viewMode, setViewMode] = useState('list');
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [showMap, setShowMap] = useState(false);
   const { handleClose, getAnimationClass } = useAnimatedClose(onClose);
 
   const getModeConfig = () => {
@@ -56,6 +60,10 @@ export default function JobSearch({
   useEffect(() => {
     applyFilters();
   }, [searchQuery, jobs]);
+
+  useEffect(() => {
+    loadSavedJobs();
+  }, [userId]);
 
   const loadJobs = async () => {
     if (!userId && (mode === 'favorites' || mode === 'published')) {
@@ -131,6 +139,48 @@ export default function JobSearch({
     }
   };
 
+  const loadSavedJobs = async () => {
+    if (!userId) return;
+    
+    try {
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        setSavedJobs(userDoc.data().savedJobs || []);
+      }
+    } catch (error) {
+      console.error('Error loading saved jobs:', error);
+    }
+  };
+
+  const handleSaveJob = async (jobId) => {
+    if (!userId) {
+      alert('Debes iniciar sesión para guardar trabajos');
+      return;
+    }
+
+    try {
+      // Actualización optimista del UI
+      const isCurrentlySaved = savedJobs.includes(jobId);
+      const newSaved = isCurrentlySaved 
+        ? savedJobs.filter(id => id !== jobId)
+        : [...savedJobs, jobId];
+      
+      setSavedJobs(newSaved); // Actualizar UI inmediatamente
+
+      // Actualizar en Firestore en segundo plano
+      const userDocRef = doc(db, 'users', userId);
+      await updateDoc(userDocRef, { savedJobs: newSaved });
+      
+    } catch (error) {
+      console.error('Error saving job:', error);
+      // Revertir el cambio si falla
+      setSavedJobs(savedJobs);
+      alert('Error al guardar el trabajo');
+    }
+  };
+
   const applyFilters = () => {
     let filtered = [...jobs];
 
@@ -164,13 +214,40 @@ export default function JobSearch({
   };
 
   const handleJobClick = (job) => {
-    console.log('Job clicked:', job);
+    setSelectedJob(job);
   };
 
   const IconComponent = config.icon;
 
+  // Si hay un trabajo seleccionado, mostrar el JobCard
+  if (selectedJob) {
+    return (
+      <div className="absolute inset-0 mx-auto max-w-7xl bg-bg z-50">
+        {/* Botón de cerrar */}
+        <button
+          onClick={() => setSelectedJob(null)}
+          className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-all"
+          aria-label="Cerrar"
+        >
+          <FaTimes className="w-5 h-5 text-black" />
+        </button>
+        
+        <JobCard
+          job={selectedJob}
+          isSaved={savedJobs.includes(selectedJob.id)}
+          onSave={() => handleSaveJob(selectedJob.id)}
+          onDismiss={() => setSelectedJob(null)}
+          showMap={showMap}
+          setShowMap={setShowMap}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className={`absolute pb-8 inset-0 mx-auto max-w-7xl bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
+
+
+    <div className={`fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn`}>
       {/* Header */}
       <div className="sticky top-0 bg-bg border-b border-gray-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
@@ -214,7 +291,7 @@ export default function JobSearch({
         </div>
 
         {/* Search Bar */}
-        <div className="relative max-w-lg mx-auto">
+        <div className="relative max-w-4xl mx-auto">
           <input
             type="text"
             value={searchQuery}
@@ -241,7 +318,7 @@ export default function JobSearch({
       </div>
 
       {/* Search Results */}
-      <div className="p-4">
+      <div className="p-2">
         <div className="mb-2 text-sm text-gray-600 font-medium">
           {searchQuery
             ? `${filteredJobs.length} resultados para "${searchQuery}"`
@@ -273,17 +350,21 @@ export default function JobSearch({
             ))}
           </div>
         ) : (
-// Vista de Cuadrícula con react-photo-view
+          // Vista de Cuadrícula con react-photo-view
           <PhotoProvider
             maskOpacity={0.9}
             bannerVisible={false}
           >
-            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-2 space-y-3">
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-1 space-y-3">
               {filteredJobs.map((job) => {
                 const imageUrl = job.url || job.flyerImage || job.image;
                 return (
-                  <PhotoView key={job.id} src={imageUrl || 'https://via.placeholder.com/400x600/e5e7eb/9ca3af?text=Sin+Imagen'}>
-                    <div className="cursor-pointer group relative break-inside-avoid overflow-hidden shadow-md hover:shadow-xl transition-all mb-3 bg-gray-100">
+                  <div key={job.id} className="relative break-inside-avoid mb-3">
+                    {/* Capa clickeable para abrir JobCard */}
+                    <div
+                      onClick={() => handleJobClick(job)}
+                      className="cursor-pointer group relative overflow-hidden shadow-md hover:shadow-xl transition-all bg-gray-100"
+                    >
                       {imageUrl ? (
                         <img
                           src={imageUrl}
@@ -317,7 +398,19 @@ export default function JobSearch({
                         </div>
                       </div>
                     </div>
-                  </PhotoView>
+                    
+                    {/* Botón para ver imagen en PhotoView */}
+                    {/* {imageUrl && (
+                      <PhotoView src={imageUrl}>
+                        <button
+                          className="absolute top-2 right-2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FaSearch className="w-3 h-3 text-gray-700" />
+                        </button>
+                      </PhotoView>
+                    )} */}
+                  </div>
                 );
               })}
             </div>
@@ -325,5 +418,6 @@ export default function JobSearch({
         )}
       </div>
     </div>
+  
   );
 }

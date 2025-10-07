@@ -329,7 +329,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-white z-50 flex items-center justify-center animate-fadeIn">
       <div className="bg-white w-full pb-20 h-full max-w-2xl overflow-hidden shadow-2xl animate-slideUp">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary to-primary p-6 text-white relative">

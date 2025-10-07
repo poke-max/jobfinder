@@ -266,6 +266,11 @@ export default function JobFeed({ user, onLogout }) {
     }
   }, []);
 
+    useEffect(() => {
+      console.log(showMap);
+    }, [showMap]);
+
+
   // ==================== SEARCH ====================
   const searchInFirebase = useCallback(async (searchText) => {
     if (!searchText.trim()) {
@@ -434,13 +439,15 @@ export default function JobFeed({ user, onLogout }) {
             className="w-full h-full"
             resistance={true}
             resistanceRatio={0.85}
-            enabled={!showMap && !showChat}
+            enabled={!showMap}
           >
             {filteredJobs.map((job, index) => {
               const isSavedJob = savedJobs.has(job.id);
               const justSavedJob = jobStates[job.id]?.justSaved;
 
               return (
+
+                
                 <SwiperSlide key={job.id} virtualIndex={index}>
                   <div className="flex items-center justify-center h-full">
                     <JobCard
@@ -453,6 +460,8 @@ export default function JobFeed({ user, onLogout }) {
                       }
                       onDismiss={() => handleDismiss(job.id)}
                       onSave={() => handleSave(job.id)}
+                      showMap={showMap}
+                      setShowMap={setShowMap}
                     />
                   </div>
                 </SwiperSlide>

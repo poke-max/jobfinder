@@ -224,7 +224,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 z-50 mx-auto max-w-4xl overflow-y-auto">
+    <div className="fixed inset-0 bg-opacity-50 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn">
       <div className="flex items-center w-full justify-center">
         <div className="bg-white w-full animate-slideUp ">
           {/* Header */}

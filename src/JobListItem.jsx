@@ -10,7 +10,7 @@ export default function JobListItem({ job, formatTimeAgo, onClick, showPublisher
       className="mb-3 bg-white border border-gray-200 rounded-xl hover:shadow-md transition cursor-pointer overflow-hidden"
       onClick={onClick}
     >
-      <div className="flex gap-3 p-4">
+      <div className="flex gap-3 p-0">
         {/* Company Logo/Image con Placeholder */}
         <div className="flex-shrink-0">
           {imageUrl ? (

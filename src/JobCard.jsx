@@ -20,10 +20,12 @@ export default function JobCard({
   onDismiss,
   onSave,
   onLocate,
-  onChat
+  onChat,
+  showMap,
+  setShowMap
 }) {
-  const [dominantColor, setDominantColor] = useState('rgb(66, 153, 225)');
-  const [showMap, setShowMap] = useState(false);
+  const [dominantColor, setDominantColor] = useState('rgba(255, 255, 255, 1)');
+ 
   const [showContact, setShowContact] = useState(false);
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
@@ -63,7 +65,7 @@ export default function JobCard({
       easing={(type) => (type === 2 ? 'cubic-bezier(0.36, 0, 0.66, -0.56)' : 'cubic-bezier(0.34, 1.56, 0.64, 1)')}
       maskOpacity={0.95}
     >
-      <div className="bg-white modal-card overflow-hidden relative flex flex-col h-screen">
+      <div className="bg-white mx-auto modal-card overflow-hidden relative flex flex-col h-screen">
         {/* Sección de Imagen - Altura fija 70% */}
         <div className="relative w-full flex-1  flex-shrink-1">
           <div className="absolute inset-0">

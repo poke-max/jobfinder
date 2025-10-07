@@ -24,7 +24,9 @@
   --altura-barra: 4em;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100dvh !important;
   width: 100vw !important;
   overflow: hidden !important;
@@ -32,6 +34,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
 }
+
 /* Colores de fondo */
 .bg-bg {
   background-color: var(--color-bg);
@@ -251,7 +254,8 @@ html, body, #root {
 /* Modal */
 .modal-card {
   width: 100%;
-  height: 100%; /* Usa todo el espacio del contenedor padre */
+  height: 100%;
+  /* Usa todo el espacio del contenedor padre */
   max-width: 896px;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -292,12 +296,15 @@ html, body, #root {
   0% {
     transform: scale(0);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   75% {
     transform: scale(0.9);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -345,12 +352,15 @@ html, body, #root {
   0% {
     height: 0%;
   }
+
   60% {
     height: 105%;
   }
+
   80% {
     height: 95%;
   }
+
   100% {
     height: 100%;
   }
@@ -365,6 +375,7 @@ html, body, #root {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -373,4 +384,41 @@ html, body, #root {
 
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out forwards;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+.ring-primary {
+  --tw-ring-color: #3b82f6;
 }

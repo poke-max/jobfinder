@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -26,10 +26,26 @@ const queryClient = new QueryClient({
   },
 })
 
+// Componente wrapper que aplica el comportamiento del teclado
+function AppWrapper() {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.target.blur();
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return <App />;
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <AppWrapper />
       
       {/* DevTools solo en desarrollo - muestra el estado de las queries */}
       {/* {import.meta.env.DEV && (

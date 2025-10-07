@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FaMapPin, FaUndo, FaLocationArrow, FaTimes } from 'react-icons/fa';
 import { useAnimatedClose } from './hooks/useAnimatedClose';
 import { MdArrowBackIos } from "react-icons/md";
+import { MdMyLocation } from "react-icons/md";
 // Cargar el CSS de Mapbox (solo una vez)
 if (!document.querySelector('link[href*="mapbox-gl.css"]')) {
   const mapboxCSS = document.createElement('link');
@@ -114,7 +115,7 @@ export default function JobMapView({ job, onClose }) {
   };
 
   return (
-    <div className={`fixed z-50 flex inset-0 items-center justify-center z-50 ${getAnimationClass()}`}>
+    <div className={`fixed z-50 flex inset-0 items-center justify-center ${getAnimationClass()}`}>
       <div className="bg-white overflow-hidden modal-card flex flex-col">
         {/* Contenedor del Mapa */}
         <div className="flex-1 relative">
@@ -128,10 +129,10 @@ export default function JobMapView({ job, onClose }) {
               <button
                 onClick={centerOnUserLocation}
                 disabled={isLocating}
-                className="absolute bottom-16 right-2 bg-white text-blue-600 p-3 rounded-full shadow-lg hover:bg-gray-50 transition disabled:opacity-50 z-10"
+                className="absolute bottom-20 right-2 bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-gray-50 transition disabled:opacity-50 z-10"
                 title="Mi ubicación"
               >
-                <FaLocationArrow className={`w-5 h-5 ${isLocating ? 'animate-pulse' : ''}`} />
+                <MdMyLocation className={`w-8 h-8 ${isLocating ? 'animate-pulse' : ''}`} />
               </button>
 
               {/* Footer con información del trabajo */}
