@@ -396,7 +396,7 @@ export default function JobFeed({ user, onLogout }) {
     <>
       <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col animate-fadeIn">
         <div className="flex-shrink-0 z-50 p-2">
-          <div className="relative max-w-lg mx-auto">
+          <div className="relative  max-w-lg mx-auto">
             <input
               type="text"
               value={searchQuery}
