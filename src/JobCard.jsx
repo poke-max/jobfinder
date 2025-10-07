@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar, FaPlane, FaPaperPlane } from 'react-icons/fa';
+import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar, FaPlane, FaPaperPlane, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
@@ -7,6 +7,9 @@ import ColorThief from 'colorthief';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'react-photo-view/dist/react-photo-view.css';
+
+import JobMapView from './JobMapView';
+import JobContactView from './JobContactView';
 
 export default function JobCard({
   job,
@@ -20,6 +23,8 @@ export default function JobCard({
   onChat
 }) {
   const [dominantColor, setDominantColor] = useState('rgb(66, 153, 225)');
+  const [showMap, setShowMap] = useState(false);
+  const [showContact, setShowContact] = useState(false);
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
 
@@ -58,8 +63,6 @@ export default function JobCard({
       easing={(type) => (type === 2 ? 'cubic-bezier(0.36, 0, 0.66, -0.56)' : 'cubic-bezier(0.34, 1.56, 0.64, 1)')}
       maskOpacity={0.95}
     >
-
-
       <div className="bg-white modal-card overflow-hidden relative flex flex-col h-screen">
         {/* Sección de Imagen - Altura fija 70% */}
         <div className="relative w-full flex-1  flex-shrink-1">
@@ -154,13 +157,13 @@ export default function JobCard({
           </div>
 
           {/* ⭐ BOTONES CIRCULARES ⭐ */}
-          <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-90">
+          <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-20">
             <button
-              onClick={onDismiss}
-              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center justify-center shadow-lg transition-all duration-300"
-              title="Descartar"
+              onClick={() => setShowMap(true)}
+              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center shadow-lg transition-all duration-300"
+              title="Ver ubicación"
             >
-              <FaTimes className="text-lg" />
+              <FaMapMarkerAlt className="text-lg" />
             </button>
             <button
               onClick={onSave}
@@ -173,11 +176,11 @@ export default function JobCard({
               <FaStar className="text-lg" />
             </button>
             <button
-              onClick={onChat}
-              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center justify-center shadow-lg transition-all duration-300"
-              title="Chat"
+              onClick={() => setShowContact(true)}
+              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 flex items-center justify-center shadow-lg transition-all duration-300"
+              title="Contacto"
             >
-              <FaPaperPlane className="text-lg" />
+              <FaPhone className="text-lg" />
             </button>
           </div>
         </div>
@@ -230,6 +233,21 @@ export default function JobCard({
             </div>
           </div>
         </div>
+
+        {/* Modales */}
+        {showMap && (
+          <JobMapView 
+            job={job} 
+            onClose={() => setShowMap(false)} 
+          />
+        )}
+        
+        {showContact && (
+          <JobContactView 
+            job={job} 
+            onClose={() => setShowContact(false)} 
+          />
+        )}
       </div>
     </PhotoProvider>
   );

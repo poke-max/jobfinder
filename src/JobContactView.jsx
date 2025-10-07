@@ -17,7 +17,7 @@ export default function JobContactView({ job, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="bg-white w-full modal-card flex flex-col animate-slideUp">
         {/* Header */}
-        <div className="flex items-center bg-gradient-primary justify-between p-4 px-5 border-b border-gray-200">
+        <div className="flex items-center bg-primary justify-between p-4 px-5 border-b border-gray-200">
           <h2 className="text-md font-bold text-white">Información de Contacto</h2>
           <button
             onClick={onClose}

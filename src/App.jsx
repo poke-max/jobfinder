@@ -9,15 +9,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   // Escuchar cambios en el estado de autenticación
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    console.log('Estado de auth cambió:', currentUser ? 'Usuario logueado' : 'No hay usuario'); // ← Agrega esto
+    setUser(currentUser);
+    setLoading(false);
+  });
 
-    // Cleanup
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
 
   const handleLoginSuccess = (loggedUser) => {
     setUser(loggedUser);
@@ -56,9 +56,16 @@ export default function App() {
   }
 
   // Mostrar Login o JobFeed según el estado
-  return user ? (
+// En App.jsx, en el return final
+return user ? (
+  <>
+    {console.log('Renderizando JobFeed')}
     <JobFeed user={user} onLogout={handleLogout} />
-  ) : (
+  </>
+) : (
+  <>
+    {console.log('Renderizando Login')}
     <Login onLoginSuccess={handleLoginSuccess} />
-  );
+  </>
+);
 }

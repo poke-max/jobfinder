@@ -277,7 +277,7 @@ export default function JobSearch({
   const IconComponent = config.icon;
 
   return (
-    <div className={`absolute inset-0 bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
+    <div className={`absolute inset-0 mx-auto max-w-4xl bg-bg z-50 overflow-y-auto ${getAnimationClass()}`}>
       {/* Header */}
       <div className="sticky top-0 bg-bg border-b border-gray-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-3 mb-4">

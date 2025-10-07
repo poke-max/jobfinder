@@ -11,13 +11,13 @@ import { collection, query, limit, startAfter, getDoc, getDocs, doc, setDoc, ser
 import { FaTimes, FaSearch, FaMapPin } from 'react-icons/fa';
 
 import JobMapView from './JobMapView';
+import JobContactView from './JobContactView';
 import JobCard from './JobCard';
 import JobChatView from './JobChatView';
 import SideBar from './SideBar';
 import JobSearch from './JobSearch';
 import MapboxComponent from './MapboxComponent';
 import PublishComponent from './PublishComponent';
-import JobContactView from './JobContactView';
 import { db } from './firebase/firebase';
 
 export default function JobFeed({ user, onLogout }) {
@@ -551,6 +551,7 @@ export default function JobFeed({ user, onLogout }) {
       <SideBar
         activeTab={currentTab}
         onTabChange={handleTabChange}
+        onLogout={onLogout}  // ← Agrega esto
       />
     </>
   );
