@@ -422,3 +422,8 @@ body,
 .ring-primary {
   --tw-ring-color: #3b82f6;
 }
+
+.PhotoView-Slider__ArrowLeft,
+.PhotoView-Slider__ArrowRight {
+  display: none !important;
+}

@@ -394,7 +394,7 @@ export default function JobFeed({ user, onLogout }) {
 
   return (
     <>
-      <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col">
+      <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col animate-fadeIn">
         <div className="flex-shrink-0 z-50 p-2">
           <div className="relative max-w-lg mx-auto">
             <input

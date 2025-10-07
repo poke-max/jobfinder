@@ -63,7 +63,7 @@ export default function JobCard({
     <PhotoProvider
       speed={() => 300}
       easing={(type) => (type === 2 ? 'cubic-bezier(0.36, 0, 0.66, -0.56)' : 'cubic-bezier(0.34, 1.56, 0.64, 1)')}
-      maskOpacity={0.95}
+      maskOpacity={0}
     >
       <div className="bg-white mx-auto modal-card overflow-hidden relative flex flex-col h-screen">
         {/* Sección de Imagen - Altura fija 70% */}
