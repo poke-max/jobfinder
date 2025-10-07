@@ -31,7 +31,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
 
   const desktopItems = [
     { id: 'inicio', icon: FaHome, iconReg: FaHome, label: 'Inicio' },
-    { id: 'mensajes', icon: FaComments, iconReg: FaRegComments, label: 'Mensajes' },
+   /*  { id: 'mensajes', icon: FaComments, iconReg: FaRegComments, label: 'Mensajes' }, */
     { id: 'favoritos', icon: FaStar, iconReg: FaRegStar, label: 'Favoritos' },
     { id: 'mapa', icon: FaMapMarkedAlt, iconReg: FaRegMap, label: 'Explorar' },
     { id: 'publicar', icon: FaSquarePlus , iconReg: FaRegPlusSquare, label: 'Publicar' }

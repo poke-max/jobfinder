@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FaMapPin, FaUndo, FaLocationArrow } from 'react-icons/fa';
+import { FaMapPin, FaUndo, FaLocationArrow, FaTimes } from 'react-icons/fa';
 import { useAnimatedClose } from './hooks/useAnimatedClose';
 import { MdArrowBackIos } from "react-icons/md";
 // Cargar el CSS de Mapbox (solo una vez)
@@ -114,7 +114,7 @@ export default function JobMapView({ job, onClose }) {
   };
 
   return (
-    <div className={`absolute inset-0 flex items-center justify-center z-50 ${getAnimationClass()}`} style={{ height: '100dvh' }}>
+    <div className={`absolute fixed z-50 flex inset-0 items-center justify-center z-50 ${getAnimationClass()}`}>
       <div className="bg-white overflow-hidden modal-card flex flex-col">
         {/* Contenedor del Mapa */}
         <div className="flex-1 relative">
@@ -170,9 +170,9 @@ export default function JobMapView({ job, onClose }) {
           {/* Botón de cerrar */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-gray-800 w-10 h-10 rounded-full shadow-lg hover:bg-white transition flex items-center justify-center z-10"
+            className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm text-gray-800 w-10 h-10 rounded-full shadow-lg hover:bg-white transition flex items-center justify-center z-10"
           >
-            <MdArrowBackIos className="w-4 h-4 ml-1" />
+            <FaTimes className="w-4 h-4 " />
           </button>
         </div>
       </div>

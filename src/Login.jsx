@@ -70,7 +70,7 @@ export default function Login({ onLoginSuccess }) {
 
   return (
     <div 
-      className="flex flex-col items-center justify-between p-6"
+      className="fixed flex inset-0 flex-col items-center justify-between p-6"
       style={{
         minHeight: '100dvh',
         height: '100dvh',
@@ -89,7 +89,7 @@ export default function Login({ onLoginSuccess }) {
             jobfinder
           </h1>
           <p className="text-white text-lg font-medium opacity-90">
-            Encuentra tu empleo ideal en todo Paraguay
+            Encuentra empleos en todo el Paraguay
           </p>
         </div>
 
@@ -157,10 +157,15 @@ export default function Login({ onLoginSuccess }) {
 
         {/* Texto legal */}
         <p className="text-xs text-white text-center px-4 opacity-90 leading-relaxed mt-4">
-          Al pulsar "Iniciar sesión", estás aceptando nuestros{' '}
+          Al iniciar sesión, estás aceptando nuestros{' '}
           <a href="#" className="underline font-semibold">Términos</a>. Obtén más información sobre cómo procesamos tus datos en nuestra{' '}
           <a href="https://www.termsfeed.com/live/67a514a4-84e9-456e-b348-b21756fcdef4" className="underline font-semibold">Política de privacidad</a> y{' '}
           <a href="#" className="underline font-semibold">Política de cookies</a>.
+        </p>
+
+        {/* Copyright */}
+        <p className="text-xs text-white text-center opacity-75 mt-6">
+          © {new Date().getFullYear()} jobfinder. Todos los derechos reservados.
         </p>
       </div>
 

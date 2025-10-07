@@ -14,8 +14,9 @@ export default function JobContactView({ job, onClose }) {
   const hasContactInfo = job?.email || job?.phoneNumber || job?.website;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ height: '100dvh' }}>
-      <div className="bg-white w-full modal-card flex flex-col animate-slideUp">
+        
+    <div className="fixed z-50 flex inset-0  items-center justify-center">
+      <div className="bg-red-100 w-full  modal-card flex flex-col animate-slideUp">
         {/* Header */}
         <div className="flex items-center bg-primary justify-between p-4 px-5 border-b border-gray-200">
           <h2 className="text-md font-bold text-white">Información de Contacto</h2>
@@ -23,7 +24,7 @@ export default function JobContactView({ job, onClose }) {
             onClick={onClose}
             className="w-10 h-10 flex items-center shadow-lg bg-white/10 justify-center rounded-full transition pt-2"
           >
-            <MdArrowBackIos className="text-xl text-white pb-2" />
+            <FaTimes className="text-xl text-white " />
           </button>
         </div>
 

@@ -157,7 +157,7 @@ export default function JobCard({
           </div>
 
           {/* ⭐ BOTONES CIRCULARES ⭐ */}
-          <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-20">
+          <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-20 lg:scale-120 lg:right-8">
             <button
               onClick={() => setShowMap(true)}
               className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center shadow-lg transition-all duration-300"

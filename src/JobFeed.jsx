@@ -65,7 +65,7 @@ export default function JobFeed({ user, onLogout }) {
       }
 
       const snapshot = await getDocs(q);
-      
+
       if (snapshot.empty) {
         return { jobs: [], nextCursor: null };
       }
@@ -88,7 +88,7 @@ export default function JobFeed({ user, onLogout }) {
     refetchOnReconnect: false,
   });
 
-  const jobs = useMemo(() => 
+  const jobs = useMemo(() =>
     infiniteJobsData?.pages.flatMap(page => page.jobs) || [],
     [infiniteJobsData]
   );
@@ -108,7 +108,7 @@ export default function JobFeed({ user, onLogout }) {
     refetchOnWindowFocus: false,
   });
 
-  const savedJobs = useMemo(() => 
+  const savedJobs = useMemo(() =>
     new Set(userData?.saved || []),
     [userData?.saved]
   );
@@ -119,7 +119,7 @@ export default function JobFeed({ user, onLogout }) {
       const userDocRef = doc(db, 'users', userId);
       const userDoc = await getDoc(userDocRef);
       const currentDismissed = userDoc.exists() ? (userDoc.data().dismissedJobs || []) : [];
-      
+
       if (!currentDismissed.includes(jobId)) {
         currentDismissed.push(jobId);
       }
@@ -157,7 +157,7 @@ export default function JobFeed({ user, onLogout }) {
     onMutate: async ({ jobId, isSaved }) => {
       await queryClient.cancelQueries(['userData', userId]);
       const previousData = queryClient.getQueryData(['userData', userId]);
-      
+
       queryClient.setQueryData(['userData', userId], (old) => {
         const saved = old?.saved || [];
         return {
@@ -348,27 +348,27 @@ export default function JobFeed({ user, onLogout }) {
     );
   }
 
-if (isLoading) {
-  return (
-    <div 
-      className="flex items-center justify-center min-h-screen"
-      style={{
-        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
-      }}
-    >
-      <div className="text-center">
-        <div 
-          className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
-          style={{ 
-            borderColor: 'rgba(255, 255, 255, 0.3)',
-            borderTopColor: 'white'
-          }}
-        ></div>
-        <p className="text-white text-lg">Cargando empleos...</p>
+  if (isLoading) {
+    return (
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{
+          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
+        }}
+      >
+        <div className="text-center">
+          <div
+            className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
+            style={{
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              borderTopColor: 'white'
+            }}
+          ></div>
+          <p className="text-white text-lg">Cargando empleos...</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   const filteredJobs = getFilteredJobs();
 
@@ -390,7 +390,7 @@ if (isLoading) {
   return (
     <>
       <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col">
-        <div className="flex-shrink-0 z-50 p-4">
+        <div className="flex-shrink-0 z-50 p-2">
           <div className="relative max-w-lg mx-auto">
             <input
               type="text"
@@ -461,9 +461,20 @@ if (isLoading) {
           </Swiper>
         </div>
 
+        {currentTab === 'inicio' && (
+          <>
+            {showMap && (
+              <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
+            )}
+            {showChat && (
+              <JobContactView job={currentJob} onClose={() => setShowChat(false)} />
+            )}
+          </>
+        )}
+
         {isFetchingNextPage && (
           <div className="absolute bottom-24 left-0 right-0 flex justify-center z-50 pointer-events-none">
-            <div className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 animate-pulse">
+            <div className="bg-primary text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 animate-pulse">
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
               <span className="font-medium">Cargando más trabajos...</span>
             </div>
@@ -483,24 +494,13 @@ if (isLoading) {
         {searchQuery && searchResults.length === 0 && !isSearching && (
           <div className="absolute inset-0 flex items-center justify-center bg-white z-0">
             <div className="text-center p-6">
-              <FaMapPin className="w-32 h-32 mx-auto mb-6 text-gray-300" />
+              <FaMapPin className="w-20 h-20 mx-auto mb-6 text-gray-300" />
               <p className="text-xl text-gray-800 font-semibold mb-2">
                 No se encontraron resultados
               </p>
               <p className="text-gray-500">para "{searchQuery}"</p>
             </div>
           </div>
-        )}
-
-        {currentTab === 'inicio' && (
-          <>
-            {showMap && (
-              <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
-            )}
-            {showChat && (
-              <JobContactView job={currentJob} onClose={() => setShowChat(false)} />
-            )}
-          </>
         )}
 
         {showSearch && (

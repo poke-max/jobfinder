@@ -32,13 +32,13 @@ createRoot(document.getElementById('root')).render(
       <App />
       
       {/* DevTools solo en desarrollo - muestra el estado de las queries */}
-      {import.meta.env.DEV && (
+      {/* {import.meta.env.DEV && (
         <ReactQueryDevtools 
           initialIsOpen={false} 
           position="bottom-right"
           buttonPosition="bottom-right"
         />
-      )}
+      )} */}
     </QueryClientProvider>
   </StrictMode>,
 )
