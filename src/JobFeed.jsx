@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Mousewheel, Keyboard } from 'swiper/modules';
-
+import { Mousewheel, Keyboard, Virtual } from 'swiper/modules'; // ← Agregado Virtual
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
+import 'swiper/css/virtual'; // ← Agregado CSS para virtual
 
-import { getFirestore, collection, query, limit, startAfter, getDoc, getDocs, doc, setDoc, serverTimestamp, where, orderBy } from 'firebase/firestore';
-import { FaTimes, FaRegPaperPlane, FaRegMap, FaRegStar, FaStepBackward, FaComments, FaPaperPlane, FaRobot, FaStar, FaMapPin, FaLocationArrow, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
-import { IoArrowUndoSharp } from "react-icons/io5";
+import { collection, query, limit, startAfter, getDoc, getDocs, doc, setDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { FaTimes, FaSearch, FaMapPin } from 'react-icons/fa';
 
 import JobMapView from './JobMapView';
 import JobCard from './JobCard';
@@ -20,242 +20,124 @@ import PublishComponent from './PublishComponent';
 import JobContactView from './JobContactView';
 import { db } from './firebase/firebase';
 
-
 export default function JobFeed({ user, onLogout }) {
   const userId = user?.uid;
+  const queryClient = useQueryClient();
 
-  const [jobs, setJobs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [jobStates, setJobStates] = useState({});
   const [showDetails, setShowDetails] = useState({});
-  const [lastDoc, setLastDoc] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [dismissedJobs, setDismissedJobs] = useState(new Set());
-  const [savedJobs, setSavedJobs] = useState(new Set());
-  const [error, setError] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [showGeneralMap, setShowGeneralMap] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [currentTab, setCurrentTab] = useState('inicio');
   const [showSearch, setShowSearch] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [showPublished, setShowPublished] = useState(false);
-  const [showContact, setShowContact] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [showButtonsAnimation, setShowButtonsAnimation] = useState(true);
 
   const swiperRef = useRef(null);
-  const viewTimerRef = useRef(null);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const previousIndexRef = useRef(0);
 
-  // Auto-scroll al último mensaje
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Focus en input al abrir chat
-  useEffect(() => {
-    if (showChat) {
-      inputRef.current?.focus();
-    }
-  }, [showChat]);
-
-  // Cargar interacciones cuando hay userId
-  useEffect(() => {
-    if (userId) {
-      loadUserInteractions(userId);
-      loadJobs();
-    }
-  }, [userId]);
-
-  // Cargar trabajos desde Firestore
-  const loadJobs = async () => {
-    try {
-      setLoading(true);
-
+  // ==================== FETCH JOBS ====================
+  const {
+    data: infiniteJobsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error
+  } = useInfiniteQuery({
+    queryKey: ['jobs'],
+    queryFn: async ({ pageParam = null }) => {
       const jobsRef = collection(db, 'jobs');
+      const batchSize = 20;
 
       let q;
-      if (lastDoc) {
-        q = query(
-          jobsRef,
-          orderBy('createdAt', 'desc'),
-          startAfter(lastDoc),
-          limit(10)
-        );
+      if (pageParam) {
+        q = query(jobsRef, orderBy('createdAt', 'desc'), startAfter(pageParam), limit(batchSize));
       } else {
-        q = query(
-          jobsRef,
-          orderBy('createdAt', 'desc'),
-          limit(10)
-        );
+        q = query(jobsRef, orderBy('createdAt', 'desc'), limit(batchSize));
       }
 
       const snapshot = await getDocs(q);
-
+      
       if (snapshot.empty) {
-        console.log('No hay más trabajos disponibles');
-        setLoading(false);
-        return;
+        return { jobs: [], nextCursor: null };
       }
 
-      const newJobs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const fetchedJobs = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
       }));
 
-      const filteredJobs = newJobs.filter(job => !dismissedJobs.has(job.id));
+      return {
+        jobs: fetchedJobs,
+        nextCursor: snapshot.docs[snapshot.docs.length - 1]
+      };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    staleTime: Infinity,
+    gcTime: Infinity, // ← Cambiado de cacheTime
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-      setJobs(prev => lastDoc ? [...prev, ...filteredJobs] : filteredJobs);
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      setLoading(false);
+  const jobs = useMemo(() => 
+    infiniteJobsData?.pages.flatMap(page => page.jobs) || [],
+    [infiniteJobsData]
+  );
 
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      setError('Error al cargar trabajos: ' + error.message);
-      setLoading(false);
-    }
-  };
-
-  // Cargar interacciones del usuario
-  const loadUserInteractions = async (uid) => {
-    try {
-      const userDocRef = doc(db, 'users', uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-
-        const dismissedArray = userData.dismissedJobs || [];
-        setDismissedJobs(new Set(dismissedArray));
-
-        const savedArray = userData.savedJobs || [];
-        setSavedJobs(new Set(savedArray));
-      }
-    } catch (error) {
-      console.error('Error loading interactions:', error);
-    }
-  };
-
-  // Detectar cuando el trabajo es visible
-  useEffect(() => {
-    if (!jobs[currentIndex] || !userId) return;
-
-    const jobId = jobs[currentIndex].id;
-
-    viewTimerRef.current = setTimeout(() => {
-      markAsViewed(jobId);
-    }, 3000);
-
-    return () => {
-      if (viewTimerRef.current) {
-        clearTimeout(viewTimerRef.current);
-      }
-    };
-  }, [currentIndex, userId]);
-
-  // Marcar como visto
-  const markAsViewed = async (jobId) => {
-    if (jobStates[jobId]?.viewed) return;
-
-    setJobStates(prev => ({
-      ...prev,
-      [jobId]: { ...prev[jobId], viewed: true }
-    }));
-
-    try {
-      const interactionRef = doc(db, 'user_interactions', `${userId}_${jobId}`);
-      await setDoc(interactionRef, {
-        userId,
-        jobId,
-        viewed: true,
-        viewedAt: serverTimestamp()
-      }, { merge: true });
-    } catch (error) {
-      console.error('Error marking as viewed:', error);
-    }
-  };
-
-  // Descartar trabajo
-  const handleDismiss = async (jobId) => {
-    setDismissedJobs(prev => new Set([...prev, jobId]));
-
-    try {
+  // ==================== FETCH USER DATA ====================
+  const { data: userData } = useQuery({
+    queryKey: ['userData', userId],
+    queryFn: async () => {
+      if (!userId) return { saved: [] };
       const userDocRef = doc(db, 'users', userId);
       const userDoc = await getDoc(userDocRef);
+      return userDoc.exists() ? { saved: userDoc.data().savedJobs || [] } : { saved: [] };
+    },
+    enabled: !!userId,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
-      let currentDismissed = [];
-      if (userDoc.exists()) {
-        currentDismissed = userDoc.data().dismissedJobs || [];
-      }
+  const savedJobs = useMemo(() => 
+    new Set(userData?.saved || []),
+    [userData?.saved]
+  );
 
+  // ==================== MUTATIONS ====================
+  const dismissMutation = useMutation({
+    mutationFn: async (jobId) => {
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
+      const currentDismissed = userDoc.exists() ? (userDoc.data().dismissedJobs || []) : [];
+      
       if (!currentDismissed.includes(jobId)) {
         currentDismissed.push(jobId);
-
-        await setDoc(userDocRef, {
-          dismissedJobs: currentDismissed,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
       }
 
-      const interactionRef = doc(db, 'user_interactions', `${userId}_${jobId}`);
-      await setDoc(interactionRef, {
-        userId,
-        jobId,
-        dismissed: true,
-        dismissedAt: serverTimestamp()
+      await setDoc(userDocRef, {
+        dismissedJobs: currentDismissed,
+        updatedAt: serverTimestamp()
       }, { merge: true });
 
-      // Ir al siguiente slide
-      if (swiperRef.current) {
-        swiperRef.current.slideNext();
-      }
-    } catch (error) {
-      console.error('Error dismissing:', error);
+      return jobId;
     }
-  };
+  });
 
-  // Guardar trabajo
-  const handleSave = async (jobId) => {
-    const isSaved = savedJobs.has(jobId);
-
-    if (isSaved) {
-      setSavedJobs(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(jobId);
-        return newSet;
-      });
-    } else {
-      setSavedJobs(prev => new Set([...prev, jobId]));
-
-      setJobStates(prev => ({
-        ...prev,
-        [jobId]: { ...prev[jobId], justSaved: true }
-      }));
-
-      setTimeout(() => {
-        setJobStates(prev => ({
-          ...prev,
-          [jobId]: { ...prev[jobId], justSaved: false }
-        }));
-      }, 600);
-    }
-
-    try {
+  const saveMutation = useMutation({
+    mutationFn: async ({ jobId, isSaved }) => {
       const userDocRef = doc(db, 'users', userId);
       const userDoc = await getDoc(userDocRef);
-
-      let currentSaved = [];
-      if (userDoc.exists()) {
-        currentSaved = userDoc.data().savedJobs || [];
-      }
+      let currentSaved = userDoc.exists() ? (userDoc.data().savedJobs || []) : [];
 
       if (isSaved) {
         currentSaved = currentSaved.filter(id => id !== jobId);
@@ -270,56 +152,93 @@ export default function JobFeed({ user, onLogout }) {
         updatedAt: serverTimestamp()
       }, { merge: true });
 
-      const interactionRef = doc(db, 'user_interactions', `${userId}_${jobId}`);
-      await setDoc(interactionRef, {
-        userId,
-        jobId,
-        saved: !isSaved,
-        savedAt: !isSaved ? serverTimestamp() : null
-      }, { merge: true });
-    } catch (error) {
-      console.error('Error saving:', error);
+      return { jobId, isSaved: !isSaved };
+    },
+    onMutate: async ({ jobId, isSaved }) => {
+      await queryClient.cancelQueries(['userData', userId]);
+      const previousData = queryClient.getQueryData(['userData', userId]);
+      
+      queryClient.setQueryData(['userData', userId], (old) => {
+        const saved = old?.saved || [];
+        return {
+          ...old,
+          saved: isSaved ? saved.filter(id => id !== jobId) : [...saved, jobId]
+        };
+      });
+
+      setJobStates(prev => ({
+        ...prev,
+        [jobId]: { ...prev[jobId], justSaved: !isSaved }
+      }));
+
+      setTimeout(() => {
+        setJobStates(prev => ({
+          ...prev,
+          [jobId]: { ...prev[jobId], justSaved: false }
+        }));
+      }, 600);
+
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['userData', userId], context.previousData);
+    },
+  });
+
+  // ==================== HANDLERS (Memoizados) ====================
+  const handleDismiss = useCallback((jobId) => {
+    dismissMutation.mutate(jobId);
+  }, [dismissMutation]);
+
+  const handleSave = useCallback((jobId) => {
+    const isSaved = savedJobs.has(jobId);
+    saveMutation.mutate({ jobId, isSaved });
+  }, [savedJobs, saveMutation]);
+
+  const handleSlideChange = useCallback((swiper) => {
+    const newIndex = swiper.activeIndex;
+    const previousIndex = previousIndexRef.current;
+
+    if (newIndex === previousIndex + 1 && jobs[previousIndex]) {
+      handleDismiss(jobs[previousIndex].id);
     }
-  };
 
+    setCurrentIndex(newIndex);
+    previousIndexRef.current = newIndex;
 
-  // Enviar mensaje
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
-
-    const newMessage = {
-      id: Date.now(),
-      type: 'user',
-      text: inputText,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setInputText('');
-
-    setIsTyping(true);
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        type: 'bot',
-        text: 'Gracias por tu pregunta. Esta es una versión demo del chat. Pronto podrás interactuar con información real del empleo.',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 1500);
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+    // Prefetch más agresivo
+    if (newIndex >= jobs.length - 10 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  };
 
-  const handleTabChange = (tab) => {
+    // Limpiar estados antiguos (memoria)
+    if (newIndex > 20) {
+      setJobStates(prev => {
+        const newStates = { ...prev };
+        Object.keys(newStates).forEach(key => {
+          const jobIndex = jobs.findIndex(j => j.id === key);
+          if (jobIndex !== -1 && jobIndex < newIndex - 20) {
+            delete newStates[key];
+          }
+        });
+        return newStates;
+      });
+
+      setShowDetails(prev => {
+        const newDetails = { ...prev };
+        Object.keys(newDetails).forEach(key => {
+          const jobIndex = jobs.findIndex(j => j.id === key);
+          if (jobIndex !== -1 && jobIndex < newIndex - 20) {
+            delete newDetails[key];
+          }
+        });
+        return newDetails;
+      });
+    }
+  }, [jobs, hasNextPage, isFetchingNextPage, fetchNextPage, handleDismiss]);
+
+  const handleTabChange = useCallback((tab) => {
     setCurrentTab(tab);
-
     setShowGeneralMap(false);
     setShowPublish(false);
     setShowSearch(false);
@@ -345,34 +264,10 @@ export default function JobFeed({ user, onLogout }) {
       default:
         break;
     }
-  };
+  }, []);
 
-  // Handler cuando cambia el slide
-  const loadJobsDebounced = useRef(null);
-
-  const handleSlideChange = (swiper) => {
-    const newIndex = swiper.activeIndex;
-    setCurrentIndex(newIndex);
-
-    // Ocultar botones temporalmente y reiniciar animación
-    setShowButtonsAnimation(false);
-    setTimeout(() => {
-      setShowButtonsAnimation(true);
-    }, 50); // Pequeño delay para forzar re-render
-
-    // Cargar más trabajos con debounce
-    if (newIndex >= jobs.length - 2) {
-      if (loadJobsDebounced.current) {
-        clearTimeout(loadJobsDebounced.current);
-      }
-      loadJobsDebounced.current = setTimeout(() => {
-        loadJobs();
-      }, 300);
-    }
-  };
-
-
-  const searchInFirebase = async (searchText) => {
+  // ==================== SEARCH ====================
+  const searchInFirebase = useCallback(async (searchText) => {
     if (!searchText.trim()) {
       setSearchResults([]);
       return;
@@ -384,14 +279,14 @@ export default function JobFeed({ user, onLogout }) {
       const q = query(jobsRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
 
-      const allJobs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const allJobsForSearch = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
       }));
 
       const keywords = searchText.toLowerCase().split(' ').filter(k => k.trim());
 
-      const filtered = allJobs.filter(job => {
+      const filtered = allJobsForSearch.filter(job => {
         const searchableText = [
           job.title,
           job.company,
@@ -410,17 +305,13 @@ export default function JobFeed({ user, onLogout }) {
       console.error('Error searching:', error);
     }
     setIsSearching(false);
-  };
+  }, []);
 
-  // Modificar getFilteredJobs para usar resultados de búsqueda
-  // ✅ CORRECTO
-  const getFilteredJobs = () => {
+  const getFilteredJobs = useCallback(() => {
     if (!searchQuery.trim()) return jobs;
-    return searchResults; // Retorna searchResults directamente (puede estar vacío si no hay coincidencias)
-  };
+    return searchResults;
+  }, [searchQuery, jobs, searchResults]);
 
-
-  // Usar con debounce en el input
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery.trim()) {
@@ -431,8 +322,9 @@ export default function JobFeed({ user, onLogout }) {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, searchInFirebase]);
 
+  // ==================== RENDER ====================
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg">
@@ -444,25 +336,19 @@ export default function JobFeed({ user, onLogout }) {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg">
         <div className="text-center text-white p-4">
           <FaTimes className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-xl mb-2">Error</p>
-          <p className="text-sm text-gray-400">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-600 rounded-lg"
-          >
-            Reintentar
-          </button>
+          <p className="text-xl mb-2">Error al cargar empleos</p>
+          <p className="text-sm text-gray-400">{error?.message}</p>
         </div>
       </div>
     );
   }
 
-  if (loading && jobs.length === 0) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg">
         <div className="text-center">
@@ -473,32 +359,26 @@ export default function JobFeed({ user, onLogout }) {
     );
   }
 
-  if (jobs.length === 0) {
+  const filteredJobs = getFilteredJobs();
+
+  if (filteredJobs.length === 0 && !searchQuery) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg">
         <div className="text-center text-white">
-          <p className="text-2xl mb-4">👀</p>
-          <p className="text-lg mb-2">No hay trabajos disponibles</p>
-          <p className="text-sm text-gray-400">Vuelve pronto para ver nuevas oportunidades</p>
-          <button
-            onClick={() => loadJobs()}
-            className="mt-4 px-4 py-2 bg-blue-600 rounded-lg"
-          >
-            Recargar
-          </button>
+          <p className="text-xl mb-2">No hay empleos disponibles</p>
+          <p className="text-sm text-gray-400">Vuelve más tarde</p>
         </div>
       </div>
     );
   }
 
-  const currentJob = jobs[currentIndex];
-  const isSaved = savedJobs.has(currentJob?.id);
-  const justSaved = jobStates[currentJob?.id]?.justSaved;
+  const currentJob = filteredJobs[currentIndex];
+  const isSaved = currentJob ? savedJobs.has(currentJob.id) : false;
+  const justSaved = currentJob ? jobStates[currentJob.id]?.justSaved : false;
 
   return (
     <>
       <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col">
-        {/* Barra de búsqueda FIJA arriba */}
         <div className="flex-shrink-0 z-50 p-4">
           <div className="relative max-w-lg mx-auto">
             <input
@@ -526,30 +406,32 @@ export default function JobFeed({ user, onLogout }) {
           </div>
         </div>
 
-        {/* Swiper Container - Ocupa el espacio disponible entre las barras */}
         <div className="flex-1 overflow-hidden">
           <Swiper
             direction="vertical"
             slidesPerView={1}
             mousewheel={true}
-            keyboard={{
-              enabled: true,
-            }}
+            keyboard={{ enabled: true }}
             onSlideChange={handleSlideChange}
             onSwiper={(swiper) => (swiperRef.current = swiper)}
-            modules={[Mousewheel, Keyboard]}
+            modules={[Mousewheel, Keyboard, Virtual]} // ← Agregado Virtual
+            virtual={{
+              enabled: true,
+              addSlidesBefore: 2,
+              addSlidesAfter: 2,
+            }}
             className="w-full h-full"
             resistance={true}
             resistanceRatio={0.85}
             enabled={!showMap && !showChat}
           >
-            {getFilteredJobs().map((job, index) => {
+            {filteredJobs.map((job, index) => {
               const isSavedJob = savedJobs.has(job.id);
               const justSavedJob = jobStates[job.id]?.justSaved;
 
               return (
-                <SwiperSlide key={job.id}>
-                  <div className="flex items-center justify-center h-full ">
+                <SwiperSlide key={job.id} virtualIndex={index}>
+                  <div className="flex items-center justify-center h-full">
                     <JobCard
                       job={job}
                       isSaved={isSavedJob}
@@ -568,7 +450,23 @@ export default function JobFeed({ user, onLogout }) {
           </Swiper>
         </div>
 
-        {/* Espacio reservado para el Sidebar - evita que el contenido quede detrás */}
+        {isFetchingNextPage && (
+          <div className="absolute bottom-24 left-0 right-0 flex justify-center z-50 pointer-events-none">
+            <div className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 animate-pulse">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+              <span className="font-medium">Cargando más trabajos...</span>
+            </div>
+          </div>
+        )}
+
+        {!hasNextPage && filteredJobs.length > 0 && !searchQuery && (
+          <div className="absolute bottom-24 left-0 right-0 flex justify-center z-50 pointer-events-none">
+            <div className="bg-gray-700 text-white px-6 py-3 rounded-full shadow-lg">
+              <span className="text-sm">Has visto todos los trabajos disponibles</span>
+            </div>
+          </div>
+        )}
+
         <div className="flex-shrink-0 h-[4em]"></div>
 
         {searchQuery && searchResults.length === 0 && !isSearching && (
@@ -578,9 +476,7 @@ export default function JobFeed({ user, onLogout }) {
               <p className="text-xl text-gray-800 font-semibold mb-2">
                 No se encontraron resultados
               </p>
-              <p className="text-gray-500">
-                para "{searchQuery}"
-              </p>
+              <p className="text-gray-500">para "{searchQuery}"</p>
             </div>
           </div>
         )}
@@ -590,14 +486,12 @@ export default function JobFeed({ user, onLogout }) {
             {showMap && (
               <JobMapView job={currentJob} onClose={() => setShowMap(false)} />
             )}
-
             {showChat && (
               <JobContactView job={currentJob} onClose={() => setShowChat(false)} />
             )}
           </>
         )}
 
-        {/* Modales */}
         {showSearch && (
           <JobSearch
             user={user}
@@ -648,13 +542,12 @@ export default function JobFeed({ user, onLogout }) {
               setCurrentTab('inicio');
             }}
             onSuccess={() => {
-              loadJobs();
+              queryClient.invalidateQueries(['jobs']);
             }}
           />
         )}
       </div>
 
-      {/* Sidebar FIJA abajo - fuera del contenedor principal */}
       <SideBar
         activeTab={currentTab}
         onTabChange={handleTabChange}
