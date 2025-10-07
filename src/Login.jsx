@@ -70,8 +70,10 @@ export default function Login({ onLoginSuccess }) {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-between p-6"
+      className="flex flex-col items-center justify-between p-6"
       style={{
+        minHeight: '100dvh',
+        height: '100dvh',
         background: 'linear-gradient(180deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
       }}
     >
@@ -83,9 +85,12 @@ export default function Login({ onLoginSuccess }) {
           >
             <MdWorkspacePremium className="text-6xl" style={{ color: 'var(--color-primary)' }} />
           </div>
-          <h1 className="text-white text-5xl font-bold tracking-tight">
+          <h1 className="text-white text-5xl font-bold tracking-tight mb-3">
             jobfinder
           </h1>
+          <p className="text-white text-lg font-medium opacity-90">
+            Encuentra tu empleo ideal en todo Paraguay
+          </p>
         </div>
 
         {/* Mensaje de error */}
