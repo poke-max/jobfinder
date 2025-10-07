@@ -10,7 +10,7 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      console.log('Estado de auth cambió:', currentUser ? 'Usuario logueado' : 'No hay usuario');
+      
       setUser(currentUser);
       setAuthLoading(false);
     });

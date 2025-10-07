@@ -72,10 +72,10 @@ export default function JobCard({
                 direction="horizontal"
                 spaceBetween={0}
                 slidesPerView={1}
-                pagination={{
+                pagination={job.images.length > 1 ? {
                   clickable: true,
                   dynamicBullets: true
-                }}
+                } : false}
                 modules={[Pagination]}
                 className="w-full h-full"
                 nested={true}

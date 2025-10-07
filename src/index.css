@@ -310,7 +310,7 @@ html, body, #root {
 
 /* Pagination bullets para swiper de imágenes */
 .swiper-pagination-bullet {
-  background: rgb(255, 255, 255) !important;
+  background: rgb(75, 85, 99) !important;
   opacity: 0.7 !important;
   width: 8px !important;
   height: 8px !important;
@@ -319,16 +319,26 @@ html, body, #root {
 
 .swiper-pagination-bullet-active {
   opacity: 1 !important;
-  width: 20px !important;
+  width: 28px !important;
   border-radius: 4px !important;
   transition: width 0.2s;
   pointer-events: none !important;
+  background: rgb(75, 85, 99) !important;
 }
 
 .swiper-pagination {
   top: 20px !important;
+  height: 20px;
   z-index: 30 !important;
   pointer-events: none !important;
+  opacity: 0.7 !important;
+  background: white !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  display: inline-block !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
 }
 
 @keyframes favSlideUp {

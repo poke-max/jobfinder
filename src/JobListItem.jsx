@@ -1,8 +1,9 @@
 import React from 'react';
-import { FaMapMarkerAlt, FaDollarSign, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaDollarSign, FaClock, FaBriefcase } from 'react-icons/fa';
 
-export default function JobListItem({ job, formatTimeAgo, onClick }) {
+export default function JobListItem({ job, formatTimeAgo, onClick, showPublisherBadge }) {
   const isNew = formatTimeAgo(job.createdAt) === 'Hace menos de 1h';
+  const imageUrl = job.url || job.flyerImage || job.image;
   
   return (
     <div 
@@ -10,19 +11,24 @@ export default function JobListItem({ job, formatTimeAgo, onClick }) {
       onClick={onClick}
     >
       <div className="flex gap-3 p-4">
-        {/* Company Logo/Image */}
-        {job.url && (
-          <div className="flex-shrink-0">
+        {/* Company Logo/Image con Placeholder */}
+        <div className="flex-shrink-0">
+          {imageUrl ? (
             <img 
-              src={job.url} 
+              src={imageUrl} 
               alt={job.company || job.title}
               className="w-16 h-16 rounded-lg object-cover"
               onError={(e) => {
                 e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
               }}
             />
+          ) : null}
+          {/* Placeholder cuando no hay imagen */}
+          <div className={`${imageUrl ? 'hidden' : 'flex'} w-16 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 items-center justify-center`}>
+            <FaBriefcase className="w-6 h-6 text-gray-400" />
           </div>
-        )}
+        </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-2">
@@ -40,6 +46,11 @@ export default function JobListItem({ job, formatTimeAgo, onClick }) {
               {isNew && (
                 <span className="text-xs bg-primary-opacity text-primary px-2 py-1 rounded font-medium">
                   Nuevo
+                </span>
+              )}
+              {showPublisherBadge && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
+                  Tuyo
                 </span>
               )}
               <span className={`text-xs px-2 py-1 rounded font-medium ${

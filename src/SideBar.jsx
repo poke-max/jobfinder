@@ -46,11 +46,11 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout })
     try {
       setShowProfileMenu(false);
       await signOut(auth);
-      console.log('Sesión cerrada exitosamente');
+     
       // Opcional: Recargar la página para limpiar el estado
       // window.location.reload();
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      
       alert('Error al cerrar sesión. Intenta nuevamente.');
     }
   };

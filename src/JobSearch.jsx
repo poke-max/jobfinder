@@ -273,23 +273,36 @@ export default function JobSearch({
             ))}
           </div>
         ) : (
-          // Vista de Cuadrícula con react-photo-view
+// Vista de Cuadrícula con react-photo-view
           <PhotoProvider
             maskOpacity={0.9}
             bannerVisible={false}
           >
             <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-2 space-y-3">
               {filteredJobs.map((job) => {
-                const imageUrl = job.url || job.flyerImage || job.image || '/placeholder-flyer.jpg';
+                const imageUrl = job.url || job.flyerImage || job.image;
                 return (
-                  <PhotoView key={job.id} src={imageUrl}>
-                    <div className="cursor-pointer group relative break-inside-avoid overflow-hidden shadow-md hover:shadow-xl transition-all mb-3">
-                      <img
-                        src={imageUrl}
-                        alt={job.title || 'Flyer'}
-                        className="w-full h-auto object-contain group-hover:opacity-95 transition-opacity duration-300"
-                        loading="lazy"
-                      />
+                  <PhotoView key={job.id} src={imageUrl || 'https://via.placeholder.com/400x600/e5e7eb/9ca3af?text=Sin+Imagen'}>
+                    <div className="cursor-pointer group relative break-inside-avoid overflow-hidden shadow-md hover:shadow-xl transition-all mb-3 bg-gray-100">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={job.title || 'Flyer'}
+                          className="w-full h-auto object-contain group-hover:opacity-95 transition-opacity duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      {/* Placeholder cuando no hay imagen */}
+                      <div className={`${imageUrl ? 'hidden' : 'flex'} w-full aspect-[2/3] items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200`}>
+                        <div className="text-center p-4">
+                          <FaFileAlt className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                          <p className="text-xs text-gray-500 font-medium">Sin imagen</p>
+                        </div>
+                      </div>
                       {/* Overlay con info básica al hover */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
