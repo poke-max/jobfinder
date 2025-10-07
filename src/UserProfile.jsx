@@ -13,7 +13,8 @@ import {
   FaCheckCircle
 } from 'react-icons/fa';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, storage } from './firebase/firebase';
 
 export default function UserProfile({ user, onClose, onMyPublications }) {
   const [userData, setUserData] = useState(null);
@@ -31,9 +32,15 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
   const [tempMessage, setTempMessage] = useState(profileData.defaultMessage);
   const [tempName, setTempName] = useState(profileData.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeletePhotoConfirm, setShowDeletePhotoConfirm] = useState(false);
+  const [showDeleteCVConfirm, setShowDeleteCVConfirm] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [deletingPhoto, setDeletingPhoto] = useState(false);
+  const [deletingCV, setDeletingCV] = useState(false);
   
   const photoInputRef = useRef(null);
   const cvInputRef = useRef(null);
@@ -80,24 +87,182 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
     loadUserData();
   }, [user]);
 
-  const handlePhotoChange = (e) => {
+  const handlePhotoChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    
+    try {
+      // Mostrar preview mientras se sube
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoPreview(reader.result);
         setImageError(false);
       };
       reader.readAsDataURL(file);
+
+      // Subir a Firebase Storage
+      const storageRef = ref(storage, `profile-photos/${user.uid}/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      
+      // Obtener URL de descarga
+      const photoURL = await getDownloadURL(storageRef);
+      
+      // Guardar en Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, {
+        customPhotoURL: photoURL,
+        photoStoragePath: storageRef.fullPath,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      setPhotoPreview(photoURL);
+      setProfileData(prev => ({ ...prev, photoUrl: photoURL }));
+      alert('Foto de perfil actualizada exitosamente');
+      
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      alert('Error al subir la foto: ' + error.message);
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
-  const handleCVUpload = (e) => {
+  const handleDeletePhoto = async () => {
+    setDeletingPhoto(true);
+    
+    try {
+      // Obtener la ruta del storage desde Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const photoStoragePath = userDoc.data()?.photoStoragePath;
+
+      // Eliminar de Storage si existe
+      if (photoStoragePath) {
+        try {
+          const photoRef = ref(storage, photoStoragePath);
+          await deleteObject(photoRef);
+        } catch (error) {
+          console.warn('Error deleting photo from storage:', error);
+        }
+      }
+
+      // Eliminar de Firestore
+      await setDoc(userDocRef, {
+        customPhotoURL: null,
+        photoStoragePath: null,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      setPhotoPreview(null);
+      setProfileData(prev => ({ ...prev, photoUrl: null }));
+      setShowDeletePhotoConfirm(false);
+      alert('Foto de perfil eliminada exitosamente');
+      
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      alert('Error al eliminar la foto: ' + error.message);
+    } finally {
+      setDeletingPhoto(false);
+    }
+  };
+
+  const handleCVUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Aquí iría la lógica para subir el CV
-      setProfileData(prev => ({ ...prev, cvUrl: file.name }));
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Por favor selecciona un archivo PDF, DOC o DOCX');
+      return;
+    }
+
+    // Validar tamaño (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('El CV no debe superar los 10MB');
+      return;
+    }
+
+    setUploadingCV(true);
+    
+    try {
+      // Subir a Firebase Storage
+      const storageRef = ref(storage, `cvs/${user.uid}/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      
+      // Obtener URL de descarga
+      const cvURL = await getDownloadURL(storageRef);
+      
+      // Guardar en Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, {
+        cvUrl: cvURL,
+        cvFileName: file.name,
+        cvStoragePath: storageRef.fullPath,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      setProfileData(prev => ({ ...prev, cvUrl: cvURL }));
       alert('CV cargado exitosamente: ' + file.name);
+      
+    } catch (error) {
+      console.error('Error uploading CV:', error);
+      alert('Error al subir el CV: ' + error.message);
+    } finally {
+      setUploadingCV(false);
+    }
+  };
+
+  const handleDeleteCV = async () => {
+    setDeletingCV(true);
+    
+    try {
+      // Obtener la ruta del storage desde Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const cvStoragePath = userDoc.data()?.cvStoragePath;
+
+      // Eliminar de Storage si existe
+      if (cvStoragePath) {
+        try {
+          const cvRef = ref(storage, cvStoragePath);
+          await deleteObject(cvRef);
+        } catch (error) {
+          console.warn('Error deleting CV from storage:', error);
+        }
+      }
+
+      // Eliminar de Firestore
+      await setDoc(userDocRef, {
+        cvUrl: null,
+        cvFileName: null,
+        cvStoragePath: null,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      setProfileData(prev => ({ ...prev, cvUrl: null }));
+      setShowDeleteCVConfirm(false);
+      alert('CV eliminado exitosamente');
+      
+    } catch (error) {
+      console.error('Error deleting CV:', error);
+      alert('Error al eliminar el CV: ' + error.message);
+    } finally {
+      setDeletingCV(false);
     }
   };
 
@@ -205,12 +370,34 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={() => photoInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full hover:bg-primary-dark transition shadow-lg"
-                >
-                  <FaCamera className="w-4 h-4" />
-                </button>
+                
+                {/* Botones de foto */}
+                <div className="absolute bottom-0 right-0 flex gap-1">
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="p-2 bg-primary text-white rounded-full hover:bg-primary-dark transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Cambiar foto"
+                  >
+                    {uploadingPhoto ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    ) : (
+                      <FaCamera className="w-4 h-4" />
+                    )}
+                  </button>
+                  
+                  {photoPreview && (
+                    <button
+                      onClick={() => setShowDeletePhotoConfirm(true)}
+                      disabled={deletingPhoto}
+                      className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Eliminar foto"
+                    >
+                      <FaTrash className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                
                 <input
                   ref={photoInputRef}
                   type="file"
@@ -299,9 +486,17 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                   </a>
                   <button
                     onClick={() => cvInputRef.current?.click()}
-                    className="flex-1 px-4 py-2 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition font-medium"
+                    disabled={uploadingCV}
+                    className="flex-1 px-4 py-2 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cambiar
+                    {uploadingCV ? 'Cambiando...' : 'Cambiar'}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteCVConfirm(true)}
+                    disabled={deletingCV}
+                    className="px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FaTrash className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -316,8 +511,15 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                     <p className="text-sm text-gray-500">Sube tu CV en formato PDF</p>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition">
-                  Subir
+                <button 
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                  disabled={uploadingCV}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    cvInputRef.current?.click();
+                  }}
+                >
+                  {uploadingCV ? 'Subiendo...' : 'Subir'}
                 </button>
               </label>
             )}
@@ -405,7 +607,73 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
           </div>
         </div>
 
-        {/* Delete Confirmation Modal */}
+        {/* Delete Photo Confirmation Modal */}
+        {showDeletePhotoConfirm && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 rounded-2xl">
+            <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl animate-fadeIn">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaCamera className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
+                ¿Eliminar foto de perfil?
+              </h3>
+              <p className="text-gray-600 text-center mb-6 text-sm">
+                Tu foto de perfil será eliminada permanentemente.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeletePhotoConfirm(false)}
+                  disabled={deletingPhoto}
+                  className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeletePhoto}
+                  disabled={deletingPhoto}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold disabled:opacity-50"
+                >
+                  {deletingPhoto ? 'Eliminando...' : 'Eliminar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete CV Confirmation Modal */}
+        {showDeleteCVConfirm && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 rounded-2xl">
+            <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl animate-fadeIn">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaFileAlt className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
+                ¿Eliminar CV?
+              </h3>
+              <p className="text-gray-600 text-center mb-6 text-sm">
+                Tu curriculum vitae será eliminado permanentemente.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteCVConfirm(false)}
+                  disabled={deletingCV}
+                  className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteCV}
+                  disabled={deletingCV}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold disabled:opacity-50"
+                >
+                  {deletingCV ? 'Eliminando...' : 'Eliminar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Account Confirmation Modal */}
         {showDeleteConfirm && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 rounded-2xl">
             <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl animate-fadeIn">
@@ -429,7 +697,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                 <button
                   onClick={handleDeleteAccount}
                   disabled={saving}
-                  className="flex-1 py-3 bg-red-500 text-white rounded-lg hover:bg-red-700 transition font-semibold disabled:opacity-50"
+                  className="flex-1 py-3 bg-red-500 text-white rounded-lg hover:bg-red-500 transition font-semibold disabled:opacity-50"
                 >
                   {saving ? 'Eliminando...' : 'Eliminar'}
                 </button>
