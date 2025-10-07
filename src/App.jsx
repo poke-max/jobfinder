@@ -6,18 +6,17 @@ import { auth } from './firebase/firebase.js';
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // Escuchar cambios en el estado de autenticación
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    console.log('Estado de auth cambió:', currentUser ? 'Usuario logueado' : 'No hay usuario'); // ← Agrega esto
-    setUser(currentUser);
-    setLoading(false);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log('Estado de auth cambió:', currentUser ? 'Usuario logueado' : 'No hay usuario');
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
 
-  return () => unsubscribe();
-}, []);
+    return () => unsubscribe();
+  }, []);
 
   const handleLoginSuccess = (loggedUser) => {
     setUser(loggedUser);
@@ -32,8 +31,8 @@ useEffect(() => {
     }
   };
 
-  // Pantalla de carga
-  if (loading) {
+  // Pantalla de carga única - se muestra solo durante verificación de auth
+  if (authLoading) {
     return (
       <div 
         className="min-h-screen flex items-center justify-center"
@@ -49,23 +48,15 @@ useEffect(() => {
               borderTopColor: 'white'
             }}
           ></div>
-          <p className="text-white text-lg">Cargando...</p>
+          <p className="text-white text-lg">Verificando sesión...</p>
         </div>
       </div>
     );
   }
 
-  // Mostrar Login o JobFeed según el estado
-// En App.jsx, en el return final
-return user ? (
-  <>
-    {console.log('Renderizando JobFeed')}
+  return user ? (
     <JobFeed user={user} onLogout={handleLogout} />
-  </>
-) : (
-  <>
-    {console.log('Renderizando Login')}
+  ) : (
     <Login onLoginSuccess={handleLoginSuccess} />
-  </>
-);
+  );
 }

@@ -180,7 +180,7 @@ export default function JobCard({
               className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 flex items-center justify-center shadow-lg transition-all duration-300"
               title="Contacto"
             >
-              <FaPhone className="text-lg" />
+              <FaPaperPlane className="text-lg" />
             </button>
           </div>
         </div>

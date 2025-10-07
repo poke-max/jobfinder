@@ -348,16 +348,27 @@ export default function JobFeed({ user, onLogout }) {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-bg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-white">Cargando empleos...</p>
-        </div>
+if (isLoading) {
+  return (
+    <div 
+      className="flex items-center justify-center min-h-screen"
+      style={{
+        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
+      }}
+    >
+      <div className="text-center">
+        <div 
+          className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
+          style={{ 
+            borderColor: 'rgba(255, 255, 255, 0.3)',
+            borderTopColor: 'white'
+          }}
+        ></div>
+        <p className="text-white text-lg">Cargando empleos...</p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const filteredJobs = getFilteredJobs();
 

@@ -53,8 +53,8 @@ export default function JobContactView({ job, onClose }) {
               {job?.email && (
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <FaEnvelope className="text-blue-600" />
+                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaEnvelope className="text-indigo-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-500 uppercase mb-1">
@@ -80,8 +80,8 @@ export default function JobContactView({ job, onClose }) {
               {job?.phoneNumber && (
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <FaWhatsapp className="text-green-600" />
+                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaWhatsapp className="text-emerald-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-500 uppercase mb-1">
@@ -104,7 +104,7 @@ export default function JobContactView({ job, onClose }) {
                     href={`https://wa.me/${job.phoneNumber.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-lg transition font-medium"
+                    className="mt-3 block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2 rounded-lg transition font-medium"
                   >
                     Abrir WhatsApp
                   </a>
@@ -115,8 +115,8 @@ export default function JobContactView({ job, onClose }) {
               {job?.website && (
                 <div className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <FaGlobe className="text-purple-600" />
+                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <FaGlobe className="text-indigo-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-500 uppercase mb-1">
@@ -139,7 +139,7 @@ export default function JobContactView({ job, onClose }) {
                     href={job.website.startsWith('http') ? job.website : `https://${job.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-2 rounded-lg transition font-medium"
+                    className="mt-3 block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 rounded-lg transition font-medium"
                   >
                     Visitar Sitio Web
                   </a>
