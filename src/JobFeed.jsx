@@ -351,7 +351,7 @@ export default function JobFeed({ user, onLogout }) {
   if (isLoading) {
     return (
       <div
-        className="flex items-center justify-center min-h-screen"
+        className="flex z-50 inset-0 items-center justify-center min-h-screen"
         style={{
           background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
         }}

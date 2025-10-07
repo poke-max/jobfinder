@@ -35,7 +35,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-screen inset-0 flex items-center justify-center"
         style={{
           background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
         }}
