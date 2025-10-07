@@ -24,6 +24,14 @@
   --altura-barra: 4em;
 }
 
+html, body, #root {
+  height: 100dvh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  margin: 0;
+  padding: 0;
+}
 /* Colores de fondo */
 .bg-bg {
   background-color: var(--color-bg);
