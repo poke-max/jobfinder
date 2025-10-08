@@ -255,11 +255,13 @@ body,
 .modal-card {
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
   /* Usa todo el espacio del contenedor padre */
   max-width: 896px;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Marcadores de mapa */

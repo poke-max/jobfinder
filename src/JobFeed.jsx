@@ -403,8 +403,8 @@ export default function JobFeed({ user, onLogout }) {
   return (
     <>
       <div style={{ backgroundColor: currentJobColor }} className="relative w-full h-dvh overflow-hidden flex flex-col animate-fadeIn">
-        <div className="flex-shrink-0 z-50 p-2">
-          <div className="relative max-w-lg mx-auto">
+        <div className="flex-shrink-0 z-50 p-2 ">
+          <div className="relative max-w-lg h-full mx-auto ">
             <input
               type="text"
               value={searchQuery}
@@ -430,7 +430,7 @@ export default function JobFeed({ user, onLogout }) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden m-0 p-0">
           <Swiper
             direction="vertical"
             slidesPerView={1}
@@ -444,7 +444,7 @@ export default function JobFeed({ user, onLogout }) {
               addSlidesBefore: 2,
               addSlidesAfter: 2,
             }}
-            className="w-full h-full"
+            className="w-full h-full m-0 p-0"
             resistance={true}
             resistanceRatio={0.85}
             enabled={!showMap}
@@ -457,7 +457,7 @@ export default function JobFeed({ user, onLogout }) {
 
                 
                 <SwiperSlide key={job.id} virtualIndex={index}>
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-full m-0 p-0">
                     <JobCard
                       job={job}
                       isSaved={isSavedJob}
