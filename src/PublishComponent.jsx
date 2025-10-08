@@ -575,7 +575,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             </div>
 
             {/* Active Status */}
-            <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+{/*             <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
               <input
                 type="checkbox"
                 checked={formData.isActive}
@@ -586,7 +586,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 <span className="text-sm font-semibold text-gray-700">Publicar como activo</span>
                 <p className="text-xs text-gray-500">El trabajo será visible inmediatamente</p>
               </div>
-            </label>
+            </label> */}
 
             {/* Submit Buttons */}
             <div className="flex gap-3 pt-4">
