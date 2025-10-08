@@ -403,16 +403,16 @@ export default function JobFeed({ user, onLogout }) {
   return (
     <>
       <div className="relative w-full mx-auto h-dvh overflow-hidden flex flex-col animate-fadeIn">
-        <div className="fixed flex top-0 left-0 right-0 z-50 px-3 py-4 sm:p-4"> {/* Menos padding horizontal en móvil */}
-          <div className="relative h-full w-full max-w-2xl mx-auto"> {/* w-full agregado */}
+        <div className="fixed flex top-0 left-0 right-0 z-10 px-3 py-4 sm:p-4"> {/* Menos padding horizontal en móvil */}
+          <div className="relative h-full w-full max-w-2xl mx-auto "> {/* w-full agregado */}
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar empleos..."
-              className="w-full h-12 pl-12 pr-12 bg-white/80 rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
+              className="w-full  h-12 pl-12 pr-12 bg-white/80 rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
             />
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <FaSearch className="absolute  left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {isSearching && (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
@@ -447,7 +447,7 @@ export default function JobFeed({ user, onLogout }) {
             className="w-full h-full m-0 p-0"
             resistance={true}
             resistanceRatio={0.85}
-            enabled={!showMap}
+            enabled={!showMap }
           >
             {filteredJobs.map((job, index) => {
               const isSavedJob = savedJobs.has(job.id);

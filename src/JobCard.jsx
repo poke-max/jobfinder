@@ -31,7 +31,7 @@ export default function JobCard({
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
 
-  
+
 
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
@@ -41,22 +41,22 @@ export default function JobCard({
       : [];
 
   // Función para extraer el color dominante
-const extractDominantColor = (imgElement) => {
-  try {
-    if (imgElement.complete && imgElement.naturalHeight !== 0) {
-      const color = colorThiefRef.current.getColor(imgElement);
-      const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-      setDominantColor(rgbColor);
-      
-      // ⭐ NUEVO: Notificar al padre sobre el cambio de color
-      if (onColorChange) {
-        onColorChange(rgbColor);
+  const extractDominantColor = (imgElement) => {
+    try {
+      if (imgElement.complete && imgElement.naturalHeight !== 0) {
+        const color = colorThiefRef.current.getColor(imgElement);
+        const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+        setDominantColor(rgbColor);
+
+        // ⭐ NUEVO: Notificar al padre sobre el cambio de color
+        if (onColorChange) {
+          onColorChange(rgbColor);
+        }
       }
+    } catch (error) {
+      console.error('Error extrayendo color:', error);
     }
-  } catch (error) {
-    console.error('Error extrayendo color:', error);
-  }
-};
+  };
 
   // Cargar el color de la primera imagen disponible
   useEffect(() => {
@@ -168,30 +168,30 @@ const extractDominantColor = (imgElement) => {
           </div>
 
           {/* ⭐ BOTONES CIRCULARES ⭐ */}
-          <div className="absolute right-4 bottom-0 translate-y-1/2 flex gap-2 z-20 lg:scale-120 lg:right-8">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 flex gap-[0.8em] z-20 lg:scale-120">
             <button
               onClick={() => setShowMap(true)}
-              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center shadow-lg transition-all duration-300"
+              className="w-14 h-14 rounded-xl bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center shadow-lg transition-all duration-300"
               title="Ver ubicación"
             >
-              <FaMapMarkerAlt className="text-lg" />
+              <FaMapMarkerAlt className="text-2xl" />
             </button>
             <button
               onClick={onSave}
-              className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${isSaved
-                ? 'bg-teal-400 text-white hover:bg-teal-500 animate-bounce-scale'
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${isSaved
+                ? 'bg-emerald-400 text-white hover:bg-emerald-500 animate-bounce-scale'
                 : 'bg-white text-gray-700 hover:bg-gray-100 '
                 }`}
               title={isSaved ? "Quitar de favoritos" : "Guardar en favoritos"}
             >
-              <FaStar className="text-lg" />
+              <FaStar className="text-2xl" />
             </button>
             <button
               onClick={() => setShowContact(true)}
-              className="w-12 h-12 rounded-full bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 flex items-center justify-center shadow-lg transition-all duration-300"
+              className="w-14 h-14 rounded-xl bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 flex items-center justify-center shadow-lg transition-all duration-300"
               title="Contacto"
             >
-              <FaPaperPlane className="text-lg" />
+              <FaPaperPlane className="text-2xl" />
             </button>
           </div>
         </div>
@@ -247,16 +247,16 @@ const extractDominantColor = (imgElement) => {
 
         {/* Modales */}
         {showMap && (
-          <JobMapView 
-            job={job} 
-            onClose={() => setShowMap(false)} 
+          <JobMapView
+            job={job}
+            onClose={() => setShowMap(false)}
           />
         )}
-        
+
         {showContact && (
-          <JobContactView 
-            job={job} 
-            onClose={() => setShowContact(false)} 
+          <JobContactView
+            job={job}
+            onClose={() => setShowContact(false)}
           />
         )}
       </div>

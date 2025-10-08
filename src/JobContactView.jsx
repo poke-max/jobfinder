@@ -15,7 +15,7 @@ export default function JobContactView({ job, onClose }) {
 
   return (
         
-    <div className="fixed z-50 flex inset-0  items-center justify-center">
+    <div className={`fixed z-50 flex inset-0 items-center justify-center`}>
       <div className="bg-bg w-full  modal-card flex flex-col animate-slideUp">
         {/* Header */}
         <div className="flex items-center bg-white justify-between p-4 px-5 border-b border-gray-200">
