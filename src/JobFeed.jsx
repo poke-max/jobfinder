@@ -402,15 +402,15 @@ export default function JobFeed({ user, onLogout }) {
 
   return (
     <>
-      <div style={{ backgroundColor: currentJobColor }} className="relative w-full h-dvh overflow-hidden flex flex-col animate-fadeIn">
-        <div className="flex-shrink-0 z-50 p-2 ">
-          <div className="relative max-w-lg h-full mx-auto ">
+      <div style={{ backgroundColor: currentJobColor }} className="relative w-full mx-auto  h-dvh overflow-hidden flex flex-col animate-fadeIn">
+        <div style={{ backgroundColor: currentJobColor }} className="flex-shrink-0 z-50 p-2   ">
+          <div style={{ backgroundColor: currentJobColor }} className="relative h-full max-w-2xl mx-auto ">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar empleos..."
-              className="w-full h-12 pl-12 pr-12 bg-white rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
+              className="w-full h-12 pl-12 pr-12 bg-white/80 rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
             />
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">

@@ -139,7 +139,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout, u
       </div>
 
       {/* Bottom Navigation Mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-60 rounded-t-3xl pb-[env(safe-area-inset-bottom)] h-[var(--altura-barra)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-60 pb-[env(safe-area-inset-bottom)] h-[var(--altura-barra)]">
         <div className="flex items-center justify-around px-4 h-full">
           {mobileItems.map((item) => {
             const isActive = activeTab === item.id;
