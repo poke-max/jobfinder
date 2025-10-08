@@ -403,9 +403,9 @@ export default function JobFeed({ user, onLogout }) {
   return (
     <>
       <div className="relative w-full mx-auto h-dvh overflow-hidden flex flex-col animate-fadeIn">
-  <div className="fixed flex top-0 left-0 right-0 z-50 px-3 py-4 sm:p-4"> {/* Menos padding horizontal en móvil */}
-  <div className="relative h-full w-full max-w-4xl mx-auto"> {/* w-full agregado */}
-    <input
+        <div className="fixed flex top-0 left-0 right-0 z-50 px-3 py-4 sm:p-4"> {/* Menos padding horizontal en móvil */}
+          <div className="relative h-full w-full max-w-2xl mx-auto"> {/* w-full agregado */}
+            <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -455,7 +455,7 @@ export default function JobFeed({ user, onLogout }) {
 
               return (
 
-                
+
                 <SwiperSlide key={job.id} virtualIndex={index}>
                   <div className="flex items-center justify-center h-full m-0 ">
                     <JobCard
@@ -471,7 +471,7 @@ export default function JobFeed({ user, onLogout }) {
                       showMap={showMap}
                       setShowMap={setShowMap}
                       onColorChange={(color) => handleColorChange(job.id, color)} // ✅ AGREGAR ESTA LÍNEA
-              
+
                     />
                   </div>
                 </SwiperSlide>
