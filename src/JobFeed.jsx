@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, Keyboard, Virtual } from 'swiper/modules'; // ← Agregado Virtual
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
+import { X, Home, Map, PlusCircle, Star, User, MapPin, Search, MessageCircle, FileText, Bookmark, MoreHorizontal, GalleryHorizontalEnd, Building2 } from 'lucide-react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/virtual'; // ← Agregado CSS para virtual
@@ -39,7 +39,7 @@ export default function JobFeed({ user, onLogout }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [dominantColors, setDominantColors] = useState({});
-
+  const [showSearchBar, setShowSearchBar] = useState(false);
 
   const swiperRef = useRef(null);
   const previousIndexRef = useRef(0);
@@ -52,6 +52,26 @@ export default function JobFeed({ user, onLogout }) {
     }));
   }, []);
 
+    // Función para determinar si usar texto blanco o negro
+  const getTextColor = (color) => {
+    if (!color) return '#ffffff';
+    
+    // Extraer valores RGB del string rgba
+    const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!rgbaMatch) return '#ffffff';
+    
+    const r = parseInt(rgbaMatch[1]);
+    const g = parseInt(rgbaMatch[2]);
+    const b = parseInt(rgbaMatch[3]);
+    
+    // Calcular luminosidad (fórmula estándar)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Si la luminosidad es alta (color claro), usar texto negro, sino blanco
+    return luminance > 0.8 ? '#000000' : '#ffffff';
+  };
+
+   
   // ==================== FETCH JOBS ====================
   const {
     data: infiniteJobsData,
@@ -399,37 +419,66 @@ export default function JobFeed({ user, onLogout }) {
   const isSaved = currentJob ? savedJobs.has(currentJob.id) : false;
   const justSaved = currentJob ? jobStates[currentJob.id]?.justSaved : false;
   const currentJobColor = dominantColors[currentJob?.id] || 'rgba(255, 255, 255, 1)';
-
+  const headerTextColor = getTextColor(currentJobColor);    
   return (
     <>
       <div className="relative w-full mx-auto h-dvh overflow-hidden flex flex-col animate-fadeIn">
-        <div className="fixed flex top-0 left-0 right-0 z-10 px-3 py-4 sm:p-4"> {/* Menos padding horizontal en móvil */}
-          <div className="relative h-full w-full max-w-2xl mx-auto "> {/* w-full agregado */}
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar empleos..."
-              className="w-full  h-12 pl-12 pr-12 bg-white/80 rounded-lg shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary text-gray-700 border border-gray-200"
-            />
-            <FaSearch className="absolute  left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              {isSearching && (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-              )}
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                  aria-label="Limpiar búsqueda"
-                >
-                  <FaTimes className="w-4 h-4" />
-                </button>
-              )}
+        {/* Header con nombre de app y búsqueda */}
+<div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-2 z-50">
+          {showSearchBar ? (
+            <div className="flex items-center gap-3 w-full">
+              <div className="relative flex-1">
+                <style>{`
+                  .search-input::placeholder {
+                    color: ${headerTextColor};
+                    opacity: 0.6;
+                  }
+                `}</style>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar empleos..."
+                  style={{ color: headerTextColor }}
+                  className="search-input w-full h-12 pl-12 pr-12 bg-transparent backdrop-blur-md rounded-full hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60 border border-white/30"
+                  autoFocus
+                />
+                <Search 
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" 
+                  style={{ color: headerTextColor }}
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {isSearching && (
+                    <div 
+                      className="animate-spin rounded-full h-5 w-5 border-b-2"
+                      style={{ borderColor: headerTextColor }}
+                    ></div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setShowSearchBar(false);
+                    }}
+                    className="hover:opacity-70 transition-opacity"
+                    aria-label="Cerrar búsqueda"
+                  >
+                    <X className="w-4 h-4" style={{ color: headerTextColor }} />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <h2 style={{ color: headerTextColor }} className="text-lg font-semibold">AppName</h2>
+              <button
+                onClick={() => setShowSearchBar(true)}
+                className="hover:bg-white/10 rounded-full p-2 transition-colors"
+              >
+                <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
+              </button>
+            </div>
+          )} 
         </div>
-
         <div className="flex overflow-hidden m-0">
           <Swiper
             direction="vertical"
@@ -447,7 +496,7 @@ export default function JobFeed({ user, onLogout }) {
             className="w-full h-full m-0 p-0"
             resistance={true}
             resistanceRatio={0.85}
-            enabled={!showMap }
+            enabled={!showMap}
           >
             {filteredJobs.map((job, index) => {
               const isSavedJob = savedJobs.has(job.id);

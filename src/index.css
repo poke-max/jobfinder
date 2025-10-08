@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 
 @theme {
   --color-primary: #667eea;
@@ -11,7 +13,7 @@
 }
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: rgba(0, 0, 0, 0.87);
@@ -21,7 +23,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --altura-barra: 4em;
+  --altura-barra: 65px;
 }
 
 html,
@@ -319,35 +321,33 @@ body,
 
 /* Pagination bullets para swiper de imágenes */
 .swiper-pagination-bullet {
-  background: rgb(75, 85, 99) !important;
-  opacity: 0.7 !important;
-  width: 8px !important;
-  height: 8px !important;
+  background: white !important;
+  opacity: 0.5 !important;
+  width: 11px !important;
+  height: 11px !important;
   pointer-events: none !important;
+  transition: opacity 0.3s ease !important;
 }
 
 .swiper-pagination-bullet-active {
   opacity: 1 !important;
-  width: 28px !important;
-  border-radius: 4px !important;
-  transition: width 0.2s;
-  pointer-events: none !important;
-  background: rgb(75, 85, 99) !important;
+  background: white !important;
 }
 
 .swiper-pagination {
-  top: 20px !important;
-  height: 20px;
+  bottom: 20px !important; /* Ajusta según tu diseño */
+  top: auto !important;
   z-index: 30 !important;
   pointer-events: none !important;
-  opacity: 0.9 !important;
-  background: white !important;
-  padding: 8px 16px !important;
-  border-radius: 20px !important;
-  display: inline-block !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  width: 100% !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 @keyframes favSlideUp {

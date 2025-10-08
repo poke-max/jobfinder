@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBriefcase, FaBookmark, FaTimes, FaCheck, FaDollarSign, FaClock, FaChevronDown, FaMapPin, FaComments, FaLocationArrow, FaStar, FaPlane, FaPaperPlane, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
+import { Briefcase, Bookmark, X, Check, DollarSign, Clock, ChevronDown, MapPin, MessageCircle, GalleryHorizontalEnd, MoreHorizontal, Navigation, Star, Plane, Send, Phone } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
@@ -30,8 +30,6 @@ export default function JobCard({
   const [showContact, setShowContact] = useState(false);
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
-
-
 
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
@@ -74,9 +72,9 @@ export default function JobCard({
       easing={(type) => (type === 2 ? 'cubic-bezier(0.36, 0, 0.66, -0.56)' : 'cubic-bezier(0.34, 1.56, 0.64, 1)')}
       maskOpacity={1}
     >
-      <div className=" mx-auto modal-card overflow-hidden relative flex flex-col h-screen">
-        {/* Sección de Imagen - Altura fija 70% */}
-        <div className="relative w-full flex-1  flex-shrink-1">
+      <div className="mx-auto modal-card overflow-hidden relative flex flex-col h-screen">
+        {/* Sección de Imagen - Altura flexible */}
+        <div className="relative w-full flex-1 flex-shrink-1">
           <div className="absolute inset-0">
             {job.images && job.images.length > 0 ? (
               <Swiper
@@ -88,7 +86,7 @@ export default function JobCard({
                   dynamicBullets: true
                 } : false}
                 modules={[Pagination]}
-                className="w-full h-full "
+                className="w-full h-full"
                 nested={true}
                 allowTouchMove={true}
                 onSwiper={(swiper) => {
@@ -164,84 +162,66 @@ export default function JobCard({
                 style={{ backgroundColor: dominantColor }}
               ></div>
             )}
-
-          </div>
-
-          {/* ⭐ BOTONES CIRCULARES ⭐ */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 flex gap-[0.8em] z-20 lg:scale-120">
-            <button
-              onClick={() => setShowMap(true)}
-              className="w-14 h-14 rounded-xl bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center shadow-lg transition-all duration-300"
-              title="Ver ubicación"
-            >
-              <FaMapMarkerAlt className="text-2xl" />
-            </button>
-            <button
-              onClick={onSave}
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${isSaved
-                ? 'bg-emerald-400 text-white hover:bg-emerald-500 animate-bounce-scale'
-                : 'bg-white text-gray-700 hover:bg-gray-100 '
-                }`}
-              title={isSaved ? "Quitar de favoritos" : "Guardar en favoritos"}
-            >
-              <FaStar className="text-2xl" />
-            </button>
-            <button
-              onClick={() => setShowContact(true)}
-              className="w-14 h-14 rounded-xl bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 flex items-center justify-center shadow-lg transition-all duration-300"
-              title="Contacto"
-            >
-              <FaPaperPlane className="text-2xl" />
-            </button>
           </div>
         </div>
 
-        {/* Sección de Información - Altura fija 30% */}
-        <div className="py-6 items-end px-4 bg-white h-[20vh] overflow-y-auto">
-          {/* Información del trabajo */}
-          <div className="flex items-start gap-3">
-            <div className="flex-1 min-w-0">
-              <div className='flex flex-row gap-2 items-center flex-wrap'>
-                {job.title && (
-                  <h2 className="text-xl font-bold text-gray-900">{job.title}</h2>
-                )}
-                {job.isActive !== undefined && (
-                  <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${job.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    <span className={`w-2 h-2 rounded-full ${job.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-                    {job.isActive ? 'Disponible' : 'No disponible'}
-                  </span>
-                )}
-              </div>
-              {job.company && (
-                <p className="text-gray-600 text-sm mt-1">{job.company}</p>
-              )}
-              <div className="flex gap-2 mt-2 text-xs text-gray-600 flex-wrap">
-                {job.city && (
-                  <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                    <FaMapPin className="w-3 h-3" />
-                    {job.city}
-                  </span>
-                )}
-                {job.salary_range && (
-                  <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                    <FaDollarSign className="w-3 h-3" />
-                    {job.salary_range}
-                  </span>
-                )}
-                {job.vacancies && (
-                  <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                    <FaBriefcase className="w-3 h-3" />
-                    {job.vacancies} {job.vacancies === 1 ? 'vacante' : 'vacantes'}
-                  </span>
-                )}
-              </div>
-              {job.createdAt && (
-                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                  <FaClock className="w-3 h-3" />
-                  {job.createdAt.toDate ? job.createdAt.toDate().toLocaleDateString() : job.createdAt}
-                </p>
-              )}
+        {/* Sección de Información - Altura fija 25% */}
+        <div className="relative bottom-0 left-0 right-0 h-[20%] bg-white flex flex-col px-4 pt-3 z-90">
+          {/* Botones de acción superiores */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <button>
+                <GalleryHorizontalEnd size={26} strokeWidth={1.5} className="text-black" />
+              </button>
+              <button onClick={onLocate}>
+                <MapPin size={26} strokeWidth={1.5} className="text-black" />
+              </button>
+              <button onClick={() => setShowContact(true)}>
+                <MessageCircle size={26} strokeWidth={1.5} className="text-black" />
+              </button>
+              <button>
+                <MoreHorizontal size={26} strokeWidth={1.5} className="text-black" />
+              </button>
             </div>
+            <button onClick={onSave}>
+              <Bookmark
+                size={26}
+                strokeWidth={1.5}
+                className={isSaved ? "text-yellow-400" : "text-black"}
+                fill={isSaved ? "currentColor" : "none"}
+              />
+            </button>
+          </div>
+
+          {/* Información del trabajo */}
+          <div className="mt-3 flex flex-col">
+            {job.title && (
+              <h1 className="text-black text-md font-semibold">{job.title}</h1>
+            )}
+            {job.city && (
+              <div className="flex items-center gap-1 mt-1">
+                <MapPin size={12} strokeWidth={1.5} className="text-gray-400" />
+                <p className="text-gray-600 text-sm">{job.city}</p>
+              </div>
+            )}
+            {job.createdAt && (
+              <p className="text-gray-600 text-sm mt-3">
+                {(() => {
+                  const date = job.createdAt.toDate ? job.createdAt.toDate() : new Date(job.createdAt);
+                  const currentYear = new Date().getFullYear();
+                  const dateYear = date.getFullYear();
+
+                  const day = date.getDate();
+                  const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+                  const month = months[date.getMonth()];
+
+                  return dateYear === currentYear
+                    ? `${day} de ${month}`
+                    : `${day} de ${month} de ${dateYear}`;
+                })()}
+              </p>
+            )}
           </div>
         </div>
 
