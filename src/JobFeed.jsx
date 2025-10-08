@@ -38,9 +38,19 @@ export default function JobFeed({ user, onLogout }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [dominantColors, setDominantColors] = useState({});
+
 
   const swiperRef = useRef(null);
   const previousIndexRef = useRef(0);
+
+  const handleColorChange = useCallback((jobId, color) => {
+    console.log('Color recibido:', color, 'para job:', jobId);
+    setDominantColors(prev => ({
+      ...prev,
+      [jobId]: color
+    }));
+  }, []);
 
   // ==================== FETCH JOBS ====================
   const {
@@ -266,11 +276,6 @@ export default function JobFeed({ user, onLogout }) {
     }
   }, []);
 
-    useEffect(() => {
-      console.log(showMap);
-    }, [showMap]);
-
-
   // ==================== SEARCH ====================
   const searchInFirebase = useCallback(async (searchText) => {
     if (!searchText.trim()) {
@@ -328,6 +333,8 @@ export default function JobFeed({ user, onLogout }) {
 
     return () => clearTimeout(timer);
   }, [searchQuery, searchInFirebase]);
+
+
 
   // ==================== RENDER ====================
   if (!user) {
@@ -391,12 +398,13 @@ export default function JobFeed({ user, onLogout }) {
   const currentJob = filteredJobs[currentIndex];
   const isSaved = currentJob ? savedJobs.has(currentJob.id) : false;
   const justSaved = currentJob ? jobStates[currentJob.id]?.justSaved : false;
+  const currentJobColor = dominantColors[currentJob?.id] || 'rgba(255, 255, 255, 1)';
 
   return (
     <>
-      <div className="relative w-full h-dvh bg-bg overflow-hidden flex flex-col animate-fadeIn">
+      <div style={{ backgroundColor: currentJobColor }} className="relative w-full h-dvh overflow-hidden flex flex-col animate-fadeIn">
         <div className="flex-shrink-0 z-50 p-2">
-          <div className="relative  max-w-lg mx-auto">
+          <div className="relative max-w-lg mx-auto">
             <input
               type="text"
               value={searchQuery}
@@ -462,6 +470,8 @@ export default function JobFeed({ user, onLogout }) {
                       onSave={() => handleSave(job.id)}
                       showMap={showMap}
                       setShowMap={setShowMap}
+                      onColorChange={(color) => handleColorChange(job.id, color)} // ✅ AGREGAR ESTA LÍNEA
+              
                     />
                   </div>
                 </SwiperSlide>

@@ -247,7 +247,7 @@ export default function JobSearch({
   return (
 
 
-    <div className={`fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn`}>
+    <div className={`fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn pb-20`}>
       {/* Header */}
       <div className="sticky top-0 bg-bg border-b border-gray-200 p-4 z-10 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
