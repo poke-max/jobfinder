@@ -403,7 +403,7 @@ export default function JobFeed({ user, onLogout }) {
   return (
     <>
       <div style={{ backgroundColor: currentJobColor }} className="relative w-full mx-auto  h-dvh overflow-hidden flex flex-col animate-fadeIn">
-        <div style={{ backgroundColor: currentJobColor }} className="flex-shrink-0 z-50 p-2   ">
+        <div style={{ backgroundColor: currentJobColor }} className="flex-shrink-0 z-50 p-4  ">
           <div style={{ backgroundColor: currentJobColor }} className="relative h-full max-w-2xl mx-auto ">
             <input
               type="text"

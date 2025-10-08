@@ -318,7 +318,7 @@ export default function JobSearch({
       </div>
 
       {/* Search Results */}
-      <div className="p-2">
+      <div className="p-4">
         <div className="mb-2 text-sm text-gray-600 font-medium">
           {searchQuery
             ? `${filteredJobs.length} resultados para "${searchQuery}"`

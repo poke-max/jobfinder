@@ -170,7 +170,7 @@ export default function JobMapView({ job, onClose }) {
 
           {/* Botón de cerrar */}
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm text-gray-800 w-10 h-10 rounded-full shadow-lg hover:bg-white transition flex items-center justify-center z-10"
           >
             <FaTimes className="w-4 h-4 " />
