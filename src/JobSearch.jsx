@@ -346,7 +346,7 @@ export default function JobSearch({
             maskOpacity={0.9}
             bannerVisible={false}
           >
-            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-[0.1em] space-y-3">
+            <div className="columns-3 sm:columns-3 md:columns-4 lg:columns-5 gap-[0.05em] space-y-3">
               {filteredJobs.map((job) => {
                 const imageUrl = job.url || job.flyerImage || job.image;
                 return (
