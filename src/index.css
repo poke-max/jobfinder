@@ -23,7 +23,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --altura-barra: 65px;
+  --altura-barra: 4em;
 }
 
 html,

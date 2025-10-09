@@ -289,13 +289,13 @@ const handleImageSelect = (e) => {
     <div className="fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto">
 
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-3 z-10 shadow-sm">
-          <div className="flex items-center gap-3">
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
-              <ChevronLeft strokeWidth={1.5} className="w-7 h-7 text-gray-600" />
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-1 z-10 shadow-sm ">
+          <div className="flex items-center gap-3 ">
+            <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
+              <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
             </button>
-            <h2 className="flex-1 text-lg font-semibold text-gray-500 text-center">Publicar</h2>
-            <div className="w-11 h-11"></div>
+            <h2 className="flex-1 text-sm font-semibold text-gray-500 text-center">Publicar</h2>
+            <div className="w-11 h-1"></div>
           </div>
 
           

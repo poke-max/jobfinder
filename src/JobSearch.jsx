@@ -246,39 +246,36 @@ export default function JobSearch({
   return (
     <div className={`fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn pb-20`}>
       {/* Header */}
-      <div className="sticky top-0 bg-bg border-b border-gray-200 p-3 z-10 ">
+      <div className="sticky top-0 bg-bg border-b border-gray-200 p-1 z-10 ">
         <div className="flex items-center gap-3 mb-4">
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <ChevronLeft  strokeWidth={1.5} className="w-7 h-7 text-gray-600" />
-          </button>
+            <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
+              <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
+            </button>
 
-          <h2 className="flex-1 text-lg font-semibold text-gray-500 text-center">{config.title}</h2>
+          <h2 className="flex-1 text-sm font-semibold text-gray-500 text-center">{config.title}</h2>
 
           {/* Botones de vista */}
           <div className="flex items-center gap-2">
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            <div className="flex bg-gray-100 rounded-lg p-1 px-1">
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded transition-all ${viewMode === 'list'
+                className={`p-1 rounded transition-all ${viewMode === 'list'
                     ? 'bg-white shadow-sm text-black'
                     : 'text-gray-500 hover:text-gray-700'
                   }`}
                 aria-label="Vista de lista"
               >
-                <List className="w-4 h-4" />
+                <List className="w-3 h-3" />
               </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded transition-all ${viewMode === 'grid'
+                className={`p-1 rounded transition-all ${viewMode === 'grid'
                     ? 'bg-white shadow-sm text-black'
                     : 'text-gray-500 hover:text-gray-700'
                   }`}
                 aria-label="Vista de cuadrícula"
               >
-                <Grid3x3 className="w-4 h-4" />
+                <Grid3x3 className="w-3 h-3" />
               </button>
             </div>
           </div>

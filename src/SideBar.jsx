@@ -162,37 +162,37 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout, u
       </div>
 
       {/* Bottom Navigation Mobile - Con Lucide React */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around px-4 py-3 z-900">
+      <div className=" h-[3.2em] lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around px-2 z-900">
         <button
           onClick={() => handleItemClick('inicio')}
           className="flex flex-col items-center gap-1"
         >
-          <Home size={24} className="text-gray-700" />
-          <span className="text-xs text-gray-700">Inicio</span>
+          <Home size={20} className="text-gray-700" />
+          <span className="text-[0.5em] text-gray-700">Inicio</span>
         </button>
         
         <button
           onClick={() => handleItemClick('mapa')}
           className="flex flex-col items-center gap-1"
         >
-          <Map size={24} className="text-gray-700" />
-          <span className="text-xs text-gray-700">Mapa</span>
+          <Map size={20} className="text-gray-700" />
+          <span className="text-[0.5em] text-gray-700">Mapa</span>
         </button>
         
         <button
           onClick={() => handleItemClick('publicar')}
           className="flex flex-col items-center gap-1"
         >
-          <PlusCircle size={24} className="text-gray-700" />
-          <span className="text-xs text-gray-700">Publicar</span>
+          <PlusCircle size={20} className="text-gray-700" />
+          <span className="text-[0.5em] text-gray-700">Publicar</span>
         </button>
         
         <button
           onClick={() => handleItemClick('favoritos')}
           className="flex flex-col items-center gap-1"
         >
-          <Star size={24} className="text-gray-700" />
-          <span className="text-xs text-gray-700">Favoritos</span>
+          <Star size={20} className="text-gray-700" />
+          <span className="text-[0.5em] text-gray-700">Favoritos</span>
         </button>
         
         <div className="relative">
@@ -200,8 +200,8 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout, u
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex flex-col items-center gap-1"
           >
-            <User size={24} className="text-gray-700" />
-            <span className="text-xs text-gray-700">Perfil</span>
+            <User size={20} className="text-gray-700" />
+            <span className="text-[0.5em] text-gray-700">Perfil</span>
           </button>
 
           {showProfileMenu && (
