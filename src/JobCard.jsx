@@ -24,13 +24,14 @@ export default function JobCard({
   showMap,
   setShowMap,
   onColorChange,
+  parentSwiperRef,
 }) {
 
   const [dominantColor, setDominantColor] = useState('rgba(255, 255, 255, 1)');
   const [activeModal, setActiveModal] = useState('gallery'); // 'gallery', 'map', 'contact', 'details'
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
-
+  const parentSwiperEnabledRef = useRef(null);  
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
     ? job.images
@@ -66,6 +67,20 @@ export default function JobCard({
     }
   }, [job.images, job.url]);
 
+  useEffect(() => {
+  // Cuando se abre el mapa o contacto, deshabilitar swiper padre
+  if (activeModal === 'map' || activeModal === 'contact') {
+    if (parentSwiperRef?.current) {
+      parentSwiperRef.current.disable();
+    }
+  } else {
+    // Cuando se cierra, rehabilitar swiper padre
+    if (parentSwiperRef?.current) {
+      parentSwiperRef.current.enable();
+    }
+  }
+}, [activeModal, parentSwiperRef]);
+
   return (
     <PhotoProvider
       speed={() => 300}
@@ -87,8 +102,8 @@ export default function JobCard({
                 } : false}
                 modules={[Pagination]}
                 className="w-full h-full "
-                nested={true}
-                allowTouchMove={true}
+                nested={false}
+                allowTouchMove={false}
                 onSwiper={(swiper) => {
                   swiperRef.current = swiper;
                 }}
@@ -100,6 +115,7 @@ export default function JobCard({
                     extractDominantColor(img);
                   }
                 }}
+               
               >
                 {job.images.map((imageUrl, index) => (
                   <SwiperSlide key={index}>
@@ -163,6 +179,28 @@ export default function JobCard({
               ></div>
             )}
           </div>
+
+          {/* Modales - Posicionados sobre la imagen */}
+          {activeModal === 'map' && (
+            <div className="absolute inset-0 z-50">
+              <JobMapView
+                job={job}
+                onClose={() => {
+                  setActiveModal('gallery');
+                  setShowMap(false);
+                }}
+              />
+            </div>
+          )}
+
+          {activeModal === 'contact' && (
+            <div className="absolute inset-0 z-50">
+              <JobContactView
+                job={job}
+                onClose={() => setActiveModal('gallery')}
+              />
+            </div>
+          )}
         </div>
 
         {/* Sección de Información - Altura fija 25% */}
@@ -224,7 +262,7 @@ export default function JobCard({
               <h1 className="text-black text-md font-semibold">{job.title}</h1>
             )}
             {job.description && (
-              <p className="text-gray-700 text-sm mt-2">{job.description}</p>
+              <p className="text-gray-700 text-sm mt-0">{job.description}</p>
             )}
             {job.city && (
               <div className="flex items-center gap-1 mt-1">
@@ -252,24 +290,6 @@ export default function JobCard({
             )}
           </div>
         </div>
-
-        {/* Modales */}
-        {activeModal === 'map' && (
-          <JobMapView
-            job={job}
-            onClose={() => {
-              setActiveModal('gallery');
-              setShowMap(false);
-            }}
-          />
-        )}
-
-        {activeModal === 'contact' && (
-          <JobContactView
-            job={job}
-            onClose={() => setActiveModal('gallery')}
-          />
-        )}
       </div>
     </PhotoProvider>
   );

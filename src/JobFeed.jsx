@@ -40,7 +40,7 @@ export default function JobFeed({ user, onLogout }) {
   const [isSearching, setIsSearching] = useState(false);
   const [dominantColors, setDominantColors] = useState({});
   const [showSearchBar, setShowSearchBar] = useState(false);
-
+const swiperEnabledRef = useRef(true);
   const swiperRef = useRef(null);
   const previousIndexRef = useRef(0);
 
@@ -71,7 +71,19 @@ export default function JobFeed({ user, onLogout }) {
     return luminance > 0.8 ? '#000000' : '#ffffff';
   };
 
-
+const toggleSwiper = useCallback(() => {
+  if (swiperRef.current) {
+    if (swiperEnabledRef.current) {
+      // Desactivar
+      swiperRef.current.disable();
+      swiperEnabledRef.current = false;
+    } else {
+      // Activar
+      swiperRef.current.enable();
+      swiperEnabledRef.current = true;
+    }
+  }
+}, []);
   // ==================== FETCH JOBS ====================
   const {
     data: infiniteJobsData,
@@ -370,6 +382,10 @@ export default function JobFeed({ user, onLogout }) {
     preloadImages();
   }, [currentIndex, jobs]);
 
+  useEffect(()=> {
+    console.log(showMap)
+  }, [showMap])
+
   // ==================== RENDER ====================
   if (!user) {
     return (
@@ -438,7 +454,7 @@ export default function JobFeed({ user, onLogout }) {
     <>
       <div className="relative w-full mx-auto h-dvh overflow-hidden flex flex-col animate-fadeIn">
         {/* Header con nombre de app y búsqueda */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-2 z-50">
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-3 z-50">
           {showSearchBar ? (
             <div className="flex items-center gap-3 w-full">
               <div className="relative flex-1">
@@ -510,7 +526,7 @@ export default function JobFeed({ user, onLogout }) {
             className="w-full h-full m-0 p-0"
             resistance={true}
             resistanceRatio={0.85}
-            enabled={!showMap}
+           
           >
             {filteredJobs.map((job, index) => {
               const isSavedJob = savedJobs.has(job.id);
@@ -532,6 +548,7 @@ export default function JobFeed({ user, onLogout }) {
                       showMap={showMap}
                       setShowMap={setShowMap}
                       onColorChange={(color) => handleColorChange(job.id, color)} 
+                      parentSwiperRef={swiperRef} 
                     />
                   </div>
                 </SwiperSlide>
@@ -644,6 +661,7 @@ export default function JobFeed({ user, onLogout }) {
         onLogout={onLogout}  // ← Agrega esto
         user={user}
       />
+
     </>
   );
 }
