@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  FaUser, 
-  FaEnvelope, 
-  FaCamera, 
+import {
+  FaUser,
+  FaEnvelope,
+  FaCamera,
   FaFileUpload,
   FaBriefcase,
   FaTrash,
@@ -15,7 +15,7 @@ import {
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from './firebase/firebase';
-
+import { ChevronLeft, Search, X, Star, FileText, Grid3x3, List } from 'lucide-react';
 export default function UserProfile({ user, onClose, onMyPublications }) {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
   const [uploadingCV, setUploadingCV] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(false);
   const [deletingCV, setDeletingCV] = useState(false);
-  
+
   const photoInputRef = useRef(null);
   const cvInputRef = useRef(null);
 
@@ -49,18 +49,18 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
   useEffect(() => {
     const loadUserData = async () => {
       if (!user?.uid) return;
-      
+
       try {
         console.log('=== Loading User Data ===');
         console.log('User UID:', user.uid);
-        
+
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (userDoc.exists()) {
           const data = userDoc.data();
           console.log('Firestore user data:', data);
-          
+
           setUserData(data);
           setProfileData({
             name: data.displayName || user.displayName || 'Usuario',
@@ -72,7 +72,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
           setPhotoPreview(data.customPhotoURL || null);
           setTempMessage(data.defaultMessage || profileData.defaultMessage);
           setTempName(data.displayName || user.displayName || 'Usuario');
-          
+
           console.log('customPhotoURL from Firestore:', data.customPhotoURL);
         } else {
           console.log('No user document found in Firestore');
@@ -104,7 +104,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
     }
 
     setUploadingPhoto(true);
-    
+
     try {
       // Mostrar preview mientras se sube
       const reader = new FileReader();
@@ -117,10 +117,10 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
       // Subir a Firebase Storage
       const storageRef = ref(storage, `profile-photos/${user.uid}/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
-      
+
       // Obtener URL de descarga
       const photoURL = await getDownloadURL(storageRef);
-      
+
       // Guardar en Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
@@ -128,11 +128,11 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
         photoStoragePath: storageRef.fullPath,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
+
       setPhotoPreview(photoURL);
       setProfileData(prev => ({ ...prev, photoUrl: photoURL }));
       alert('Foto de perfil actualizada exitosamente');
-      
+
     } catch (error) {
       console.error('Error uploading photo:', error);
       alert('Error al subir la foto: ' + error.message);
@@ -143,7 +143,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
 
   const handleDeletePhoto = async () => {
     setDeletingPhoto(true);
-    
+
     try {
       // Obtener la ruta del storage desde Firestore
       const userDocRef = doc(db, 'users', user.uid);
@@ -166,12 +166,12 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
         photoStoragePath: null,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
+
       setPhotoPreview(null);
       setProfileData(prev => ({ ...prev, photoUrl: null }));
       setShowDeletePhotoConfirm(false);
       alert('Foto de perfil eliminada exitosamente');
-      
+
     } catch (error) {
       console.error('Error deleting photo:', error);
       alert('Error al eliminar la foto: ' + error.message);
@@ -198,15 +198,15 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
     }
 
     setUploadingCV(true);
-    
+
     try {
       // Subir a Firebase Storage
       const storageRef = ref(storage, `cvs/${user.uid}/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
-      
+
       // Obtener URL de descarga
       const cvURL = await getDownloadURL(storageRef);
-      
+
       // Guardar en Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
@@ -215,10 +215,10 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
         cvStoragePath: storageRef.fullPath,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
+
       setProfileData(prev => ({ ...prev, cvUrl: cvURL }));
       alert('CV cargado exitosamente: ' + file.name);
-      
+
     } catch (error) {
       console.error('Error uploading CV:', error);
       alert('Error al subir el CV: ' + error.message);
@@ -229,7 +229,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
 
   const handleDeleteCV = async () => {
     setDeletingCV(true);
-    
+
     try {
       // Obtener la ruta del storage desde Firestore
       const userDocRef = doc(db, 'users', user.uid);
@@ -253,11 +253,11 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
         cvStoragePath: null,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
+
       setProfileData(prev => ({ ...prev, cvUrl: null }));
       setShowDeleteCVConfirm(false);
       alert('CV eliminado exitosamente');
-      
+
     } catch (error) {
       console.error('Error deleting CV:', error);
       alert('Error al eliminar el CV: ' + error.message);
@@ -274,7 +274,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
         defaultMessage: tempMessage,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
+
       setProfileData(prev => ({ ...prev, defaultMessage: tempMessage }));
       setIsEditingMessage(false);
       alert('Mensaje guardado exitosamente');
@@ -295,7 +295,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
         customPhotoURL: photoPreview,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
+
       setProfileData(prev => ({ ...prev, name: tempName, photoUrl: photoPreview }));
       setIsEditingProfile(false);
       alert('Perfil actualizado exitosamente');
@@ -332,29 +332,26 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
     <div className="fixed inset-0 bg-white z-50 flex items-center justify-center animate-fadeIn">
       <div className="bg-white w-full pb-20 h-full max-w-2xl overflow-hidden shadow-2xl animate-slideUp">
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary to-primary p-6 text-white relative">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition"
-          >
-            <FaTimes className="w-5 h-5" />
+        <div className="flex items-center gap-3 ">
+          <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
+            <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
           </button>
-          <h2 className="text-2xl font-bold mb-1">Mi Perfil</h2>
-          <p className="text-blue-100 text-sm">Gestiona tu información personal</p>
+          <h2 className="flex-1 text-sm font-bold text-gray-700 text-center">Mi Perfil</h2>
+          <div className="w-11 h-1"></div>
         </div>
 
         <div className="p-2 overflow-y-auto max-h-[calc(90vh-100px)]">
           {/* Profile Photo & Name Section */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-6">
+          <div className="bg-gray-50 rounded-xl p-3 mb-3">
             <div className="flex items-start gap-6">
               {/* Profile Photo */}
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden border-4 border-white shadow-lg">
+                <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-md">
                   {photoPreview && !imageError ? (
-                    <img 
-                      src={photoPreview} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover" 
+                    <img
+                      src={photoPreview}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         console.error('❌ Error loading image:', photoPreview);
                         console.error('Error event:', e);
@@ -365,39 +362,39 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                       }}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-primary text-white text-3xl font-bold">
+                    <div className="w-full h-full flex items-center justify-center bg-primary text-white text-2xl font-bold">
                       {profileData.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
-                
+
                 {/* Botones de foto */}
-                <div className="absolute bottom-0 right-0 flex gap-1">
+                <div className="absolute -bottom-1 -right-1 flex gap-1">
                   <button
                     onClick={() => photoInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className="p-2 bg-primary text-white rounded-full hover:bg-primary-dark transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 bg-primary text-white rounded-full hover:bg-primary-dark transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Cambiar foto"
                   >
                     {uploadingPhoto ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
                     ) : (
-                      <FaCamera className="w-4 h-4" />
+                      <FaCamera className="w-3 h-3" />
                     )}
                   </button>
-                  
+
                   {photoPreview && (
                     <button
                       onClick={() => setShowDeletePhotoConfirm(true)}
                       disabled={deletingPhoto}
-                      className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Eliminar foto"
                     >
-                      <FaTrash className="w-3 h-3" />
+                      <FaTrash className="w-2.5 h-2.5" />
                     </button>
                   )}
                 </div>
-                
+
                 <input
                   ref={photoInputRef}
                   type="file"
@@ -461,16 +458,13 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
           </div>
 
           {/* CV Upload Section */}
-          <div className="bg-white border-2 border-gray-200 rounded-xl p-6 mb-6 hover:border-primary transition">
+          <div className="bg-white border-2 border-gray-200 rounded-xl p-2 mb-6 hover:border-primary transition">
             {profileData.cvUrl ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <FaFileAlt className="w-6 h-6 text-blue-600" />
-                  </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-800">Curriculum Vitae</h4>
-                    <p className="text-sm text-gray-500">
+                    <h4 className="font-semibold text-sm text-gray-800">Curriculum Vitae</h4>
+                    <p className="text-xs text-gray-500">
                       {profileData.cvUrl.split('/').pop().split('?')[0].replace(/%2F/g, '/').split('/').pop()}
                     </p>
                   </div>
@@ -480,14 +474,14 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                     href={profileData.cvUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition text-center font-medium"
+                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition text-center font-medium text-xs"
                   >
                     Ver CV
                   </a>
                   <button
                     onClick={() => cvInputRef.current?.click()}
                     disabled={uploadingCV}
-                    className="flex-1 px-4 py-2 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {uploadingCV ? 'Cambiando...' : 'Cambiar'}
                   </button>
@@ -503,16 +497,14 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
             ) : (
               <label className="flex items-center justify-between cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <FaFileUpload className="w-6 h-6 text-blue-600" />
-                  </div>
+         
                   <div>
-                    <h4 className="font-semibold text-gray-800">Curriculum Vitae</h4>
-                    <p className="text-sm text-gray-500">Sube tu CV en formato PDF</p>
+                    <h4 className="font-semibold text-sm text-gray-800">Curriculum Vitae</h4>
+                    <p className="text-xs text-gray-500">Sube tu CV en formato PDF</p>
                   </div>
                 </div>
-                <button 
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                <button
+                  className="px-4 py-2 bg-primary text-white text-xs rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={uploadingCV}
                   onClick={(e) => {
                     e.preventDefault();
@@ -533,11 +525,10 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
           </div>
 
           {/* Default Message Section */}
-          <div className="bg-white border-2 border-gray-200 rounded-xl p-6 mb-6">
+          <div className="bg-white border-2 border-gray-200 rounded-xl p-2 mb-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <FaEdit className="w-5 h-5 text-primary" />
-                <h4 className="font-semibold text-gray-800">Mensaje Predeterminado</h4>
+                <h4 className="font-semibold  text-sm text-gray-800">Mensaje Predeterminado</h4>
               </div>
               <button
                 onClick={() => setIsEditingMessage(!isEditingMessage)}
@@ -546,14 +537,14 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                 {isEditingMessage ? 'Cancelar' : 'Editar'}
               </button>
             </div>
-            
+
             {isEditingMessage ? (
               <div className="space-y-3">
                 <textarea
                   value={tempMessage}
                   onChange={(e) => setTempMessage(e.target.value)}
                   rows="4"
-                  className="w-full px-4 py-3 border-2 border-primary rounded-lg focus:outline-none focus:ring-2 ring-primary resize-none"
+                  className="w-full px-4 py-2  text-sx border-2 border-primary rounded-lg focus:outline-none focus:ring-2 ring-primary resize-none"
                   placeholder="Escribe tu mensaje predeterminado..."
                 />
                 <button
@@ -566,7 +557,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
                 </button>
               </div>
             ) : (
-              <p className="text-gray-600 text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
+              <p className="text-gray-600 text-sm leading-relaxed bg-gray-50 p-2 rounded-lg">
                 {profileData.defaultMessage}
               </p>
             )}
@@ -575,7 +566,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
           {/* Action Buttons */}
           <div className="space-y-3">
             {/* My Publications */}
-            <button 
+            <button
               onClick={() => {
                 if (onMyPublications) onMyPublications();
                 if (onClose) onClose();

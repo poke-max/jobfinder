@@ -609,7 +609,7 @@ export default function JobFeed({ user, onLogout }) {
       {!showMap && (
 
 
-        <div className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 pt-3 z-1">
+        <div className="fixed top-0 left-0 right-0 flex items-center justify-between px-2 pt-3 z-1">
           {showSearchBar ? (
             <div className="flex items-center gap-3 w-full">
               <div className="relative flex-1">
@@ -654,7 +654,7 @@ export default function JobFeed({ user, onLogout }) {
             </div>
           ) : (
             <div className="flex items-center justify-between w-full">
-              <h2 style={{ color: headerTextColor }} className="text-lg font-semibold">AppName</h2>
+              <h2 style={{ color: headerTextColor }} className="text-md font-semibold">AppName</h2>
               <button
                 onClick={() => setShowSearchBar(true)}
                 className="hover:bg-white/10 rounded-full p-2 transition-colors"

@@ -294,7 +294,7 @@ const handleImageSelect = (e) => {
             <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
               <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
             </button>
-            <h2 className="flex-1 text-sm font-semibold text-gray-500 text-center">Publicar</h2>
+            <h2 className="flex-1 text-sm font-bold text-gray-500 text-center">Publicar</h2>
             <div className="w-11 h-1"></div>
           </div>
 
