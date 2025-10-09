@@ -10,6 +10,7 @@ import 'react-photo-view/dist/react-photo-view.css';
 
 import JobMapView from './JobMapView';
 import JobContactView from './JobContactView';
+import JobDetailView from './JobDetailView';
 
 export default function JobCard({
   job,
@@ -69,7 +70,7 @@ export default function JobCard({
 
   useEffect(() => {
     // Cuando se abre el mapa o contacto, deshabilitar swiper padre
-    if (activeModal === 'map') {
+    if (activeModal === 'map' || activeModal === 'details') {
       if (parentSwiperRef?.current) {
         parentSwiperRef.current.disable();
       }
@@ -201,7 +202,19 @@ export default function JobCard({
               />
             </div>
           )}
+
+          {activeModal === 'details' && (
+            <div className="absolute inset-0 ">
+              <JobDetailView
+                job={job}
+                onClose={() => setActiveModal('gallery')}
+              />
+            </div>
+          )}
+
         </div>
+
+
 
         {/* Sección de Información - Altura fija 25% */}
         <div className="relative bottom-0 left-0 right-0 max-h-[50vh] overflow-y-auto bg-white flex flex-col px-4 pt-3 pb-4 z-90">
@@ -301,6 +314,6 @@ export default function JobCard({
           </div>
         </div>
       </div>
-    </PhotoProvider>
+    </PhotoProvider >
   );
 }
