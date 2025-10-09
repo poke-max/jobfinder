@@ -115,7 +115,7 @@ export default function JobMapView({ job, onClose }) {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white">
+    <div className="w-full bg-red-900 h-full flex flex-col bg-white z-50">
       {/* Contenedor del Mapa - Ocupa todo el espacio disponible */}
       {job.ubication && job.ubication.lat && job.ubication.lng ? (
         <div className="w-full h-full relative">
@@ -127,7 +127,7 @@ export default function JobMapView({ job, onClose }) {
           <button
             onClick={centerOnUserLocation}
             disabled={isLocating}
-            className="absolute bottom-4 right-4 bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-gray-50 transition disabled:opacity-50 z-10"
+            className="absolute bottom-12 right-4 bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-gray-50 transition disabled:opacity-50 z-10"
             title="Mi ubicación"
           >
             <MdMyLocation className={`w-6 h-6 ${isLocating ? 'animate-pulse' : ''}`} />

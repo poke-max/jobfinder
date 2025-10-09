@@ -31,7 +31,7 @@ export default function JobCard({
   const [activeModal, setActiveModal] = useState('gallery'); // 'gallery', 'map', 'contact', 'details'
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
-  const parentSwiperEnabledRef = useRef(null);  
+  const parentSwiperEnabledRef = useRef(null);
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
     ? job.images
@@ -68,18 +68,18 @@ export default function JobCard({
   }, [job.images, job.url]);
 
   useEffect(() => {
-  // Cuando se abre el mapa o contacto, deshabilitar swiper padre
-  if (activeModal === 'map' || activeModal === 'contact') {
-    if (parentSwiperRef?.current) {
-      parentSwiperRef.current.disable();
+    // Cuando se abre el mapa o contacto, deshabilitar swiper padre
+    if (activeModal === 'map') {
+      if (parentSwiperRef?.current) {
+        parentSwiperRef.current.disable();
+      }
+    } else {
+      // Cuando se cierra, rehabilitar swiper padre
+      if (parentSwiperRef?.current) {
+        parentSwiperRef.current.enable();
+      }
     }
-  } else {
-    // Cuando se cierra, rehabilitar swiper padre
-    if (parentSwiperRef?.current) {
-      parentSwiperRef.current.enable();
-    }
-  }
-}, [activeModal, parentSwiperRef]);
+  }, [activeModal, parentSwiperRef]);
 
   return (
     <PhotoProvider
@@ -115,7 +115,7 @@ export default function JobCard({
                     extractDominantColor(img);
                   }
                 }}
-               
+
               >
                 {job.images.map((imageUrl, index) => (
                   <SwiperSlide key={index}>
@@ -182,7 +182,7 @@ export default function JobCard({
 
           {/* Modales - Posicionados sobre la imagen */}
           {activeModal === 'map' && (
-            <div className="absolute inset-0 z-50">
+            <div className="absolute inset-0 z-900">
               <JobMapView
                 job={job}
                 onClose={() => {
@@ -194,7 +194,7 @@ export default function JobCard({
           )}
 
           {activeModal === 'contact' && (
-            <div className="absolute inset-0 z-50">
+            <div className="absolute inset-0 ">
               <JobContactView
                 job={job}
                 onClose={() => setActiveModal('gallery')}
@@ -208,10 +208,13 @@ export default function JobCard({
           {/* Botones de acción superiores */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <button onClick={() => setActiveModal('gallery')}>
-                <GalleryHorizontalEnd 
-                  size={26} 
-                  strokeWidth={1.5} 
+              <button onClick={() => {
+                setActiveModal('gallery')
+                setShowMap(false);
+              }}>
+                <GalleryHorizontalEnd
+                  size={26}
+                  strokeWidth={1.5}
                   className="text-black"
                   fill={activeModal === 'gallery' ? "currentColor" : "none"}
                 />
@@ -221,22 +224,29 @@ export default function JobCard({
                 setActiveModal(newState);
                 setShowMap(newState === 'map');
               }}>
-                <MapPin 
-                  size={26} 
-                  strokeWidth={1.5} 
+                <MapPin
+                  size={26}
+                  strokeWidth={1.5}
                   className="text-black"
                   fill={activeModal === 'map' ? "currentColor" : "none"}
                 />
               </button>
-              <button onClick={() => setActiveModal(activeModal === 'contact' ? 'gallery' : 'contact')}>
-                <MessageCircle 
-                  size={26} 
-                  strokeWidth={1.5} 
+              <button onClick={() => {
+                setActiveModal(activeModal === 'contact' ? 'gallery' : 'contact')
+                setShowMap(false);
+
+              }}>
+                <MessageCircle
+                  size={26}
+                  strokeWidth={1.5}
                   className="text-black"
                   fill={activeModal === 'contact' ? "currentColor" : "none"}
                 />
               </button>
-              <button onClick={() => setActiveModal(activeModal === 'details' ? 'gallery' : 'details')}>
+              <button onClick={() => {
+                setActiveModal(activeModal === 'details' ? 'gallery' : 'details')
+                setShowMap(false);
+              }}>
                 {activeModal === 'details' ? (
                   <div className="w-[26px] h-[26px] bg-black rounded-full flex items-center justify-center">
                     <MoreHorizontal size={16} strokeWidth={2} className="text-white" />

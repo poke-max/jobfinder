@@ -40,7 +40,7 @@ export default function JobFeed({ user, onLogout }) {
   const [isSearching, setIsSearching] = useState(false);
   const [dominantColors, setDominantColors] = useState({});
   const [showSearchBar, setShowSearchBar] = useState(false);
-const swiperEnabledRef = useRef(true);
+  const swiperEnabledRef = useRef(true);
   const swiperRef = useRef(null);
   const previousIndexRef = useRef(0);
 
@@ -71,19 +71,19 @@ const swiperEnabledRef = useRef(true);
     return luminance > 0.8 ? '#000000' : '#ffffff';
   };
 
-const toggleSwiper = useCallback(() => {
-  if (swiperRef.current) {
-    if (swiperEnabledRef.current) {
-      // Desactivar
-      swiperRef.current.disable();
-      swiperEnabledRef.current = false;
-    } else {
-      // Activar
-      swiperRef.current.enable();
-      swiperEnabledRef.current = true;
+  const toggleSwiper = useCallback(() => {
+    if (swiperRef.current) {
+      if (swiperEnabledRef.current) {
+        // Desactivar
+        swiperRef.current.disable();
+        swiperEnabledRef.current = false;
+      } else {
+        // Activar
+        swiperRef.current.enable();
+        swiperEnabledRef.current = true;
+      }
     }
-  }
-}, []);
+  }, []);
   // ==================== FETCH JOBS ====================
   const {
     data: infiniteJobsData,
@@ -382,10 +382,6 @@ const toggleSwiper = useCallback(() => {
     preloadImages();
   }, [currentIndex, jobs]);
 
-  useEffect(()=> {
-    console.log(showMap)
-  }, [showMap])
-
   // ==================== RENDER ====================
   if (!user) {
     return (
@@ -454,61 +450,7 @@ const toggleSwiper = useCallback(() => {
     <>
       <div className="relative w-full mx-auto h-dvh overflow-hidden flex flex-col animate-fadeIn">
         {/* Header con nombre de app y búsqueda */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-3 z-50">
-          {showSearchBar ? (
-            <div className="flex items-center gap-3 w-full">
-              <div className="relative flex-1">
-                <style>{`
-                  .search-input::placeholder {
-                    color: ${headerTextColor};
-                    opacity: 0.6;
-                  }
-                `}</style>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar empleos..."
-                  style={{ color: headerTextColor }}
-                  className="search-input w-full h-12 pl-12 pr-12 bg-transparent backdrop-blur-md rounded-full hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60 border border-white/30"
-                  autoFocus
-                />
-                <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
-                  style={{ color: headerTextColor }}
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  {isSearching && (
-                    <div
-                      className="animate-spin rounded-full h-5 w-5 border-b-2"
-                      style={{ borderColor: headerTextColor }}
-                    ></div>
-                  )}
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setShowSearchBar(false);
-                    }}
-                    className="hover:opacity-70 transition-opacity"
-                    aria-label="Cerrar búsqueda"
-                  >
-                    <X className="w-4 h-4" style={{ color: headerTextColor }} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between w-full">
-              <h2 style={{ color: headerTextColor }} className="text-lg font-semibold">AppName</h2>
-              <button
-                onClick={() => setShowSearchBar(true)}
-                className="hover:bg-white/10 rounded-full p-2 transition-colors"
-              >
-                <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
-              </button>
-            </div>
-          )}
-        </div>
+
         <div className="flex overflow-hidden m-0">
           <Swiper
             direction="vertical"
@@ -526,7 +468,7 @@ const toggleSwiper = useCallback(() => {
             className="w-full h-full m-0 p-0"
             resistance={true}
             resistanceRatio={0.85}
-           
+
           >
             {filteredJobs.map((job, index) => {
               const isSavedJob = savedJobs.has(job.id);
@@ -547,8 +489,8 @@ const toggleSwiper = useCallback(() => {
                       onSave={() => handleSave(job.id)}
                       showMap={showMap}
                       setShowMap={setShowMap}
-                      onColorChange={(color) => handleColorChange(job.id, color)} 
-                      parentSwiperRef={swiperRef} 
+                      onColorChange={(color) => handleColorChange(job.id, color)}
+                      parentSwiperRef={swiperRef}
                     />
                   </div>
                 </SwiperSlide>
@@ -556,7 +498,9 @@ const toggleSwiper = useCallback(() => {
             })}
           </Swiper>
         </div>
-{/* 
+
+
+        {/* 
         {currentTab === 'inicio' && (
           <>
             {showMap && (
@@ -662,6 +606,65 @@ const toggleSwiper = useCallback(() => {
         user={user}
       />
 
+      {!showMap && (
+
+
+        <div className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 pt-3 z-1">
+          {showSearchBar ? (
+            <div className="flex items-center gap-3 w-full">
+              <div className="relative flex-1">
+                <style>{`
+                  .search-input::placeholder {
+                    color: ${headerTextColor};
+                    opacity: 0.6;
+                  }
+                `}</style>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar empleos..."
+                  style={{ color: headerTextColor }}
+                  className="search-input w-full h-12 pl-12 pr-12 bg-transparent backdrop-blur-md rounded-full hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60 border border-white/30"
+                  autoFocus
+                />
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+                  style={{ color: headerTextColor }}
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {isSearching && (
+                    <div
+                      className="animate-spin rounded-full h-5 w-5 border-b-2"
+                      style={{ borderColor: headerTextColor }}
+                    ></div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setShowSearchBar(false);
+                    }}
+                    className="hover:opacity-70 transition-opacity"
+                    aria-label="Cerrar búsqueda"
+                  >
+                    <X className="w-4 h-4" style={{ color: headerTextColor }} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <h2 style={{ color: headerTextColor }} className="text-lg font-semibold">AppName</h2>
+              <button
+                onClick={() => setShowSearchBar(true)}
+                className="hover:bg-white/10 rounded-full p-2 transition-colors"
+              >
+                <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
