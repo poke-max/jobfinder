@@ -86,7 +86,7 @@ const handleSave = () => {
 
   useEffect(() => {
     // Cuando se abre el mapa o contacto, deshabilitar swiper padre
-    if (activeModal === 'map' || activeModal === 'details') {
+    if (activeModal === 'map') {
       if (parentSwiperRef?.current) {
         parentSwiperRef.current.disable();
       }
@@ -119,8 +119,8 @@ const handleSave = () => {
                 } : false}
                 modules={[Pagination]}
                 className="w-full h-full "
-                nested={false}
-                allowTouchMove={false}
+                nested={true}
+                allowTouchMove={true}
                 onSwiper={(swiper) => {
                   swiperRef.current = swiper;
                 }}

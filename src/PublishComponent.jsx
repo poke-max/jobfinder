@@ -262,7 +262,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
 
   if (success) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0  z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center animate-fadeIn">
           <FaCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h3 className="text-2xl font-bold text-gray-800 mb-2">¡Publicado!</h3>
@@ -273,9 +273,9 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[50vh] overflow-hidden shadow-2xl animate-fadeIn">
+    <div className="fixed inset-0 bg-bg z-50 overflow-y-auto">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white w-full max-w-4xl overflow-hidden shadow-2xl animate-fadeIn">
           {/* Header */}
           <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
             <div className="flex items-center justify-between">
@@ -297,7 +297,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+          <div className="p-6 space-y-6 overflow-y-auto">
             {/* Error Message */}
             {error && (
               <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3 animate-fadeIn">
@@ -328,7 +328,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 </div>
                 <div className="w-full bg-blue-200 rounded-full h-2">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -454,7 +454,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={() => setShowMap(!showMap)}
-                className="w-full px-4 py-3 bg-blue-100 border-2 border-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition font-semibold text-blue-600 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-blue-100 border-2 border-blue-600 rounded-xl hover:bg-primary hover:text-white transition font-semibold text-blue-600 flex items-center justify-center gap-2"
               >
                 <FaMapMarkerAlt />
                 {formData.ubication.lat !== -25.2637 ? 'Cambiar Ubicación' : 'Seleccionar Ubicación'}
@@ -486,7 +486,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                       
                       <button
                         onClick={handleMyLocation}
-                        className="absolute bottom-6 right-6 p-4 bg-white rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 border-2 border-blue-600"
+                        className="absolute bottom-6 right-6 p-4 bg-white rounded-full shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110 border-2 border-blue-600"
                         title="Mi ubicación"
                       >
                         <FaCrosshairs className="w-6 h-6" />
@@ -503,7 +503,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                         </button>
                         <button
                           onClick={confirmLocation}
-                          className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg"
+                          className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg"
                         >
                           Confirmar Ubicación
                         </button>
@@ -643,7 +643,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-4 bg-primary text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -659,6 +659,8 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
               </button>
             </div>
           </div>
+
+          <div className="flex-shrink-0  z-90 h-[4em] lg:h-[0em] z-0"></div>
         </div>
       </div>
     </div>

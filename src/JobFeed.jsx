@@ -433,7 +433,7 @@ export default function JobFeed({ user, onLogout }) {
   if (filteredJobs.length === 0 && !searchQuery) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg">
-        <div className="text-center text-white">
+        <div className="text-center text-gray-700">
           <p className="text-xl mb-2">No hay empleos disponibles</p>
           <p className="text-sm text-gray-400">Vuelve más tarde</p>
         </div>
@@ -529,7 +529,7 @@ export default function JobFeed({ user, onLogout }) {
           </div>
         )}
 
-        <div className="flex-shrink-0  z-90 h-[4em] lg:h-[0em]"></div>
+        <div className="flex-shrink-0  z-90 h-[4em] lg:h-[0em] z-0"></div>
 
         {searchQuery && searchResults.length === 0 && !isSearching && (
           <div className="absolute inset-0 flex items-center justify-center bg-white z-0">

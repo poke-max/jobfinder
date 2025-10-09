@@ -162,7 +162,7 @@ export default function Sidebar({ activeTab = 'inicio', onTabChange, onLogout, u
       </div>
 
       {/* Bottom Navigation Mobile - Con Lucide React */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around px-4 py-3 z-60">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around px-4 py-3 z-900">
         <button
           onClick={() => handleItemClick('inicio')}
           className="flex flex-col items-center gap-1"
