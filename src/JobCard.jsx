@@ -116,7 +116,7 @@ export default function JobCard({
                         <img
                           src={imageUrl}
                           alt={`${job.title} - ${index + 1}`}
-                          className="relative w-full h-full object-contain z-10"
+                          className={`relative w-full h-full object-contain z-10 transition-opacity duration-300 ${activeModal === 'gallery' || activeModal === null ? 'opacity-100' : 'opacity-0'}`}
                           crossOrigin="anonymous"
                           onLoad={(e) => {
                             // Solo extraer color si es la imagen activa
@@ -147,7 +147,7 @@ export default function JobCard({
                   <img
                     src={job.url}
                     alt={job.title || 'Imagen del trabajo'}
-                    className="relative w-full h-full object-contain z-10"
+                    className={`relative w-full h-full object-contain z-10 transition-opacity duration-300 ${activeModal === 'gallery' || activeModal === null ? 'opacity-100' : 'opacity-0'}`}
                     crossOrigin="anonymous"
                     onLoad={(e) => extractDominantColor(e.target)}
                     onError={(e) => {
