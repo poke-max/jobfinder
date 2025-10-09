@@ -58,6 +58,22 @@ export default function JobCard({
     }
   };
 
+  const [isAnimating, setIsAnimating] = useState(false);
+
+const handleSave = () => {
+  if (!isSaved) {
+    setIsAnimating(true);
+    
+    // Sonido de "pop" o "click"
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+    audio.volume = 0.3;
+    audio.play().catch(err => console.log('Error reproduciendo audio:', err));
+    
+    setTimeout(() => setIsAnimating(false), 500);
+  }
+  onSave();
+};
+
   // Cargar el color de la primera imagen disponible
   useEffect(() => {
     if (allImages.length > 0) {
@@ -269,14 +285,19 @@ export default function JobCard({
                 )}
               </button>
             </div>
-            <button onClick={onSave}>
-              <Bookmark
-                size={26}
-                strokeWidth={1.5}
-                className={isSaved ? "text-yellow-400" : "text-black"}
-                fill={isSaved ? "currentColor" : "none"}
-              />
-            </button>
+<button 
+  onClick={handleSave}
+  className="transition-transform hover:scale-105"
+>
+  <Bookmark
+    size={26}
+    strokeWidth={1.5}
+    className={`${
+      isSaved ? "text-yellow-400" : "text-black"
+    } ${isAnimating ? "animate-shake-scale" : ""}`}
+    fill={isSaved ? "currentColor" : "none"}
+  />
+</button>
           </div>
 
           {/* Información del trabajo */}

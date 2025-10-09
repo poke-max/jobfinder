@@ -37,7 +37,7 @@ export default function JobDetailView({ job, onClose }) {
     };
 
     return (
-        <div className="absolute inset-0 bg-gray-200 overflow-y-auto z-90 mt-20">
+        <div className="absolute inset-0 bg-gray-200 overflow-y-auto z-90 mt-20 animate-fadeIn">
             <div className="min-h-full p-6 ">
                 <div className="max-w-3xl mx-auto">
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">

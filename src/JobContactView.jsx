@@ -24,7 +24,7 @@ export default function JobContactView({ job, onClose }) {
   const displayJob = job || demoJob;
 
   return (
-    <div className="absolute inset-0 bg-gray-200 overflow-y-auto mt-20 z-50">
+    <div className="absolute inset-0 bg-gray-200 overflow-y-auto mt-20 z-50 animate-fadeIn">
       <div className="min-h-full p-6">
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-xl shadow-sm p-6">

@@ -115,7 +115,7 @@ export default function JobMapView({ job, onClose }) {
   };
 
   return (
-    <div className="w-full  h-full flex flex-col bg-white z-50">
+    <div className="w-full  h-full flex flex-col bg-white z-50 animate-fadeIn">
       {/* Contenedor del Mapa - Ocupa todo el espacio disponible */}
       {job.ubication && job.ubication.lat && job.ubication.lng ? (
         <div className="w-full h-full relative">
