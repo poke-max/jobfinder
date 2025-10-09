@@ -37,13 +37,13 @@ export default function JobDetailView({ job, onClose }) {
     };
 
     return (
-        <div className="absolute inset-0 bg-gray-200 overflow-y-auto z-90">
-            <div className="min-h-full p-6 pt-20">
+        <div className="absolute inset-0 bg-gray-200 overflow-y-auto z-90 mt-20">
+            <div className="min-h-full p-6 ">
                 <div className="max-w-3xl mx-auto">
                     <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
                         {/* Basic Info */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-gray-100">
-                            {displayJob.type && (
+{/*                             {displayJob.type && (
                                 <div className="flex items-center gap-2">
                                     <Briefcase className="w-4 h-4 text-gray-400" />
                                     <div>
@@ -51,7 +51,7 @@ export default function JobDetailView({ job, onClose }) {
                                         <p className="text-gray-900 font-medium">{displayJob.type}</p>
                                     </div>
                                 </div>
-                            )}
+                            )} */}
                             {displayJob.modality && (
                                 <div className="flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-gray-400" />
