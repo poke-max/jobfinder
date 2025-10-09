@@ -7,7 +7,7 @@ export default function JobListItem({ job, formatTimeAgo, onClick, showPublisher
   
   return (
     <div 
-      className="mb-3 bg-white border border-gray-200 rounded-xl hover:shadow-md transition cursor-pointer overflow-hidden"
+      className="mb-3 bg-white border border-gray-200 px-2 hover:shadow-md transition cursor-pointer overflow-hidden"
       onClick={onClick}
     >
       <div className="flex gap-3 p-0">
@@ -17,7 +17,7 @@ export default function JobListItem({ job, formatTimeAgo, onClick, showPublisher
             <img 
               src={imageUrl} 
               alt={job.company || job.title}
-              className="w-16 h-16 rounded-lg object-cover"
+              className="w-16 h-16  object-cover"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
@@ -53,13 +53,13 @@ export default function JobListItem({ job, formatTimeAgo, onClick, showPublisher
                   Tuyo
                 </span>
               )}
-              <span className={`text-xs px-2 py-1 rounded font-medium ${
+              {/* <span className={`text-xs px-2 py-1 rounded font-medium ${
                 job.isActive 
                   ? 'bg-green-100 text-green-700' 
                   : 'bg-red-100 text-red-700'
               }`}>
                 {job.isActive ? 'Disponible' : 'Cerrado'}
-              </span>
+              </span> */}
             </div>
           </div>
           
