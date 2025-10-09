@@ -116,7 +116,7 @@ export default function JobCard({
                         <img
                           src={imageUrl}
                           alt={`${job.title} - ${index + 1}`}
-                          className={`relative w-full h-full object-contain z-10 transition-opacity duration-300 ${activeModal === 'gallery' || activeModal === null ? 'opacity-100' : 'opacity-0'}`}
+                          className={`relative w-full h-full object-contain z-10 transition-opacity duration-300 ${activeModal === 'gallery' ? 'opacity-100' : 'opacity-0'}`}
                           crossOrigin="anonymous"
                           onLoad={(e) => {
                             // Solo extraer color si es la imagen activa
@@ -147,7 +147,7 @@ export default function JobCard({
                   <img
                     src={job.url}
                     alt={job.title || 'Imagen del trabajo'}
-                    className={`relative w-full h-full object-contain z-10 transition-opacity duration-300 ${activeModal === 'gallery' || activeModal === null ? 'opacity-100' : 'opacity-0'}`}
+                    className={`relative w-full h-full object-contain z-10 transition-opacity duration-200 ${activeModal === 'gallery' ? 'opacity-100' : 'opacity-0'}`}
                     crossOrigin="anonymous"
                     onLoad={(e) => extractDominantColor(e.target)}
                     onError={(e) => {
@@ -170,7 +170,7 @@ export default function JobCard({
           {/* Botones de acción superiores */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <button onClick={() => setActiveModal(activeModal === 'gallery' ? null : 'gallery')}>
+              <button onClick={() => setActiveModal('gallery')}>
                 <GalleryHorizontalEnd 
                   size={26} 
                   strokeWidth={1.5} 
@@ -179,7 +179,7 @@ export default function JobCard({
                 />
               </button>
               <button onClick={() => {
-                const newState = activeModal === 'map' ? null : 'map';
+                const newState = activeModal === 'map' ? 'gallery' : 'map';
                 setActiveModal(newState);
                 setShowMap(newState === 'map');
               }}>
@@ -190,7 +190,7 @@ export default function JobCard({
                   fill={activeModal === 'map' ? "currentColor" : "none"}
                 />
               </button>
-              <button onClick={() => setActiveModal(activeModal === 'contact' ? null : 'contact')}>
+              <button onClick={() => setActiveModal(activeModal === 'contact' ? 'gallery' : 'contact')}>
                 <MessageCircle 
                   size={26} 
                   strokeWidth={1.5} 
@@ -198,7 +198,7 @@ export default function JobCard({
                   fill={activeModal === 'contact' ? "currentColor" : "none"}
                 />
               </button>
-              <button onClick={() => setActiveModal(activeModal === 'details' ? null : 'details')}>
+              <button onClick={() => setActiveModal(activeModal === 'details' ? 'gallery' : 'details')}>
                 {activeModal === 'details' ? (
                   <div className="w-[26px] h-[26px] bg-black rounded-full flex items-center justify-center">
                     <MoreHorizontal size={16} strokeWidth={2} className="text-white" />
@@ -255,7 +255,7 @@ export default function JobCard({
           <JobMapView
             job={job}
             onClose={() => {
-              setActiveModal(null);
+              setActiveModal('gallery');
               setShowMap(false);
             }}
           />
@@ -264,7 +264,7 @@ export default function JobCard({
         {activeModal === 'contact' && (
           <JobContactView
             job={job}
-            onClose={() => setActiveModal(null)}
+            onClose={() => setActiveModal('gallery')}
           />
         )}
       </div>
