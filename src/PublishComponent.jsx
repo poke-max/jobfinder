@@ -144,9 +144,19 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageSelect = (e) => {
+const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     const remainingSlots = 4 - imageFiles.length;
+    
+    // Validar que sean imágenes
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const invalidFiles = files.filter(file => !validImageTypes.includes(file.type));
+    
+    if (invalidFiles.length > 0) {
+      setError('El archivo seleccionado no es una imagen. Por favor selecciona archivos JPG, PNG, GIF o WEBP.');
+      return;
+    }
+    
     const filesToAdd = files.slice(0, remainingSlots);
 
     if (filesToAdd.length > 0) {
