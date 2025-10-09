@@ -166,7 +166,7 @@ export default function JobCard({
         </div>
 
         {/* Sección de Información - Altura fija 25% */}
-        <div className="relative bottom-0 left-0 right-0 h-[20%] bg-white flex flex-col px-4 pt-3 z-90">
+        <div className="relative bottom-0 left-0 right-0 max-h-[50vh] overflow-y-auto bg-white flex flex-col px-4 pt-3 pb-4 z-90">
           {/* Botones de acción superiores */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">

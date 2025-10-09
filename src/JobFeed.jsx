@@ -571,7 +571,7 @@ export default function JobFeed({ user, onLogout }) {
           </div>
         )}
 
-        <div className="flex-shrink-0 bg-red-900 z-90 h-[4em] lg:h-[0em]"></div>
+        <div className="flex-shrink-0  z-90 h-[4em] lg:h-[0em]"></div>
 
         {searchQuery && searchResults.length === 0 && !isSearching && (
           <div className="absolute inset-0 flex items-center justify-center bg-white z-0">
