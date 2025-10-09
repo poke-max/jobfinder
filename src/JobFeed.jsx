@@ -52,26 +52,26 @@ export default function JobFeed({ user, onLogout }) {
     }));
   }, []);
 
-    // Función para determinar si usar texto blanco o negro
+  // Función para determinar si usar texto blanco o negro
   const getTextColor = (color) => {
     if (!color) return '#ffffff';
-    
+
     // Extraer valores RGB del string rgba
     const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
     if (!rgbaMatch) return '#ffffff';
-    
+
     const r = parseInt(rgbaMatch[1]);
     const g = parseInt(rgbaMatch[2]);
     const b = parseInt(rgbaMatch[3]);
-    
+
     // Calcular luminosidad (fórmula estándar)
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
+
     // Si la luminosidad es alta (color claro), usar texto negro, sino blanco
     return luminance > 0.8 ? '#000000' : '#ffffff';
   };
 
-   
+
   // ==================== FETCH JOBS ====================
   const {
     data: infiniteJobsData,
@@ -85,7 +85,7 @@ export default function JobFeed({ user, onLogout }) {
     queryKey: ['jobs'],
     queryFn: async ({ pageParam = null }) => {
       const jobsRef = collection(db, 'jobs');
-      const batchSize = 20;
+      const batchSize = 50;
 
       let q;
       if (pageParam) {
@@ -237,7 +237,7 @@ export default function JobFeed({ user, onLogout }) {
     previousIndexRef.current = newIndex;
 
     // Prefetch más agresivo
-    if (newIndex >= jobs.length - 10 && hasNextPage && !isFetchingNextPage) {
+    if (newIndex >= jobs.length - 30 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
 
@@ -354,7 +354,21 @@ export default function JobFeed({ user, onLogout }) {
     return () => clearTimeout(timer);
   }, [searchQuery, searchInFirebase]);
 
+  // Después de tus otros useEffect
+  useEffect(() => {
+    // Precargar próximas 15 imágenes
+    const preloadImages = async () => {
+      for (let i = currentIndex + 1; i <= Math.min(currentIndex + 15, jobs.length - 1); i++) {
+        const job = jobs[i];
+        if (job?.imageUrl) {
+          const img = new Image();
+          img.src = job.imageUrl;
+        }
+      }
+    };
 
+    preloadImages();
+  }, [currentIndex, jobs]);
 
   // ==================== RENDER ====================
   if (!user) {
@@ -419,12 +433,12 @@ export default function JobFeed({ user, onLogout }) {
   const isSaved = currentJob ? savedJobs.has(currentJob.id) : false;
   const justSaved = currentJob ? jobStates[currentJob.id]?.justSaved : false;
   const currentJobColor = dominantColors[currentJob?.id] || 'rgba(255, 255, 255, 1)';
-  const headerTextColor = getTextColor(currentJobColor);    
+  const headerTextColor = getTextColor(currentJobColor);
   return (
     <>
       <div className="relative w-full mx-auto h-dvh overflow-hidden flex flex-col animate-fadeIn">
         {/* Header con nombre de app y búsqueda */}
-<div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-2 z-50">
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-2 z-50">
           {showSearchBar ? (
             <div className="flex items-center gap-3 w-full">
               <div className="relative flex-1">
@@ -443,13 +457,13 @@ export default function JobFeed({ user, onLogout }) {
                   className="search-input w-full h-12 pl-12 pr-12 bg-transparent backdrop-blur-md rounded-full hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60 border border-white/30"
                   autoFocus
                 />
-                <Search 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" 
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
                   style={{ color: headerTextColor }}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                   {isSearching && (
-                    <div 
+                    <div
                       className="animate-spin rounded-full h-5 w-5 border-b-2"
                       style={{ borderColor: headerTextColor }}
                     ></div>
@@ -477,7 +491,7 @@ export default function JobFeed({ user, onLogout }) {
                 <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
               </button>
             </div>
-          )} 
+          )}
         </div>
         <div className="flex overflow-hidden m-0">
           <Swiper
