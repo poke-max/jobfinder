@@ -104,7 +104,7 @@ export default function JobCard({
                 {job.images.map((imageUrl, index) => (
                   <SwiperSlide key={index}>
                     <PhotoView src={imageUrl}>
-                      <div className="relative w-full h-full cursor-pointer pt-20">
+                      <div className="relative w-full h-full cursor-pointer">
                         {/* Fondo con color dominante */}
                         <div
                           className="absolute inset-0 w-full h-full"
