@@ -223,6 +223,9 @@ export default function JobCard({
             {job.title && (
               <h1 className="text-black text-md font-semibold">{job.title}</h1>
             )}
+            {job.description && (
+              <p className="text-gray-700 text-sm mt-2">{job.description}</p>
+            )}
             {job.city && (
               <div className="flex items-center gap-1 mt-1">
                 <MapPin size={12} strokeWidth={1.5} className="text-gray-400" />

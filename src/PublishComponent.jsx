@@ -16,6 +16,9 @@ import {
 } from 'react-icons/fa';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from './firebase/firebase';
 
 // Token de Mapbox
 mapboxgl.accessToken = 'pk.eyJ1IjoibWF4OTkiLCJhIjoiY21nNXVkdXc4MDV1YzJycHk2ZXkzMDJwaiJ9.bL8FqOik8Hze2dz8DU9OGg';
@@ -24,6 +27,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [showMap, setShowMap] = useState(false);
@@ -57,7 +61,6 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
 
   useEffect(() => {
     if (showMap && mapContainer.current && !map.current) {
-      // Inicializar mapa centrado en Asunción, Paraguay
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
@@ -65,10 +68,8 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
         zoom: 12
       });
 
-      // Agregar controles de navegación
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      // Crear marcador inicial
       const el = document.createElement('div');
       el.className = 'custom-marker';
       el.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
@@ -80,7 +81,6 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
         .setLngLat([formData.ubication.lng, formData.ubication.lat])
         .addTo(map.current);
 
-      // Actualizar ubicación cuando se arrastra el marcador
       marker.current.on('dragend', () => {
         const lngLat = marker.current.getLngLat();
         setSelectedLocation({
@@ -89,7 +89,6 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
         });
       });
 
-      // Click en el mapa para mover el marcador
       map.current.on('click', (e) => {
         marker.current.setLngLat([e.lngLat.lng, e.lngLat.lat]);
         setSelectedLocation({
@@ -106,7 +105,6 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
         (position) => {
           const { latitude, longitude } = position.coords;
           
-          // Mover mapa y marcador a la ubicación del usuario
           if (map.current && marker.current) {
             map.current.flyTo({
               center: [longitude, latitude],
@@ -170,21 +168,71 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Función para subir imágenes a Firebase Storage
+  const uploadImages = async () => {
+    if (imageFiles.length === 0) return [];
+
+    const imageUrls = [];
+    const totalImages = imageFiles.length;
+
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i];
+      const timestamp = Date.now();
+      const fileName = `jobs/${userId}/${timestamp}_${i}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+
+      try {
+        // Subir imagen
+        const snapshot = await uploadBytes(storageRef, file);
+        // Obtener URL de descarga
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        imageUrls.push(downloadURL);
+        
+        // Actualizar progreso
+        setUploadProgress(Math.round(((i + 1) / totalImages) * 100));
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+      }
+    }
+
+    return imageUrls;
+  };
+
   const handleSubmit = async () => {
     if (!formData.title || !formData.description) {
       setError('Por favor completa al menos el título y la descripción');
       return;
     }
 
+    if (!userId) {
+      setError('Debes estar autenticado para publicar un trabajo');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
+      setUploadProgress(0);
+
+      // Subir imágenes primero
+      const imageUrls = await uploadImages();
+
+      // Preparar datos para Firestore
+      const jobData = {
+        ...formData,
+        userId: userId,
+        images: imageUrls,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        views: 0,
+        applications: 0
+      };
+
+      // Guardar en Firestore
+      const docRef = await addDoc(collection(db, 'jobs'), jobData);
       
-      // Simular guardado (aquí iría tu lógica de Firebase)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('Job data:', formData);
-      console.log('Images:', imageFiles);
+      console.log('Job published with ID:', docRef.id);
       
       setSuccess(true);
       setTimeout(() => {
@@ -208,14 +256,15 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
       }
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
   if (success) {
     return (
-      <div className="fixed  inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center animate-fadeIn">
-          <FaCheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
+          <FaCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h3 className="text-2xl font-bold text-gray-800 mb-2">¡Publicado!</h3>
           <p className="text-gray-600">Tu oferta de trabajo ha sido publicada exitosamente</p>
         </div>
@@ -224,15 +273,15 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn">
-      <div className="flex items-center w-full justify-center">
-        <div className="bg-white w-full animate-slideUp ">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[50vh] overflow-hidden shadow-2xl animate-fadeIn">
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl z-10">
+          <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary-opacity rounded-xl">
-                  <FaBriefcase className="w-6 h-6 text-primary" />
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <FaBriefcase className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Publicar Trabajo</h2>
@@ -248,7 +297,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className="p-6 space-y-6 h-full pb-20 overflow-y-auto">
+          <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]">
             {/* Error Message */}
             {error && (
               <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3 animate-fadeIn">
@@ -267,6 +316,22 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 >
                   <FaTimes className="w-4 h-4" />
                 </button>
+              </div>
+            )}
+
+            {/* Upload Progress */}
+            {loading && uploadProgress > 0 && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-blue-800">Subiendo imágenes...</span>
+                  <span className="text-sm text-blue-600">{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
               </div>
             )}
 
@@ -298,7 +363,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 ))}
                 
                 {imagePreviews.length < 4 && (
-                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary cursor-pointer transition bg-gray-50">
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-600 cursor-pointer transition bg-gray-50">
                     <FaImage className="w-8 h-8 text-gray-400 mb-2" />
                     <span className="text-xs text-gray-500 text-center px-2">
                       {imagePreviews.length === 0 ? 'Agregar imágenes' : 'Agregar más'}
@@ -322,7 +387,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaBriefcase className="text-primary" />
+                  <FaBriefcase className="text-blue-600" />
                   Título del Puesto *
                 </label>
                 <input
@@ -330,13 +395,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="Ej: Desarrollador Full Stack"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaBuilding className="text-primary" />
+                  <FaBuilding className="text-blue-600" />
                   Empresa
                 </label>
                 <input
@@ -344,7 +409,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.company}
                   onChange={(e) => handleInputChange('company', e.target.value)}
                   placeholder="Nombre de la empresa"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -352,7 +417,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             {/* Description */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaFileAlt className="text-primary" />
+                <FaFileAlt className="text-blue-600" />
                 Descripción *
               </label>
               <textarea
@@ -360,14 +425,14 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Describe el puesto y responsabilidades..."
                 rows="4"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
 
             {/* Requirements */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaFileAlt className="text-primary" />
+                <FaFileAlt className="text-blue-600" />
                 Requisitos
               </label>
               <textarea
@@ -375,21 +440,21 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 onChange={(e) => handleInputChange('requeriments', e.target.value)}
                 placeholder="Lista los requisitos y habilidades necesarias..."
                 rows="3"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
 
             {/* Location with Map */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaMapMarkerAlt className="text-primary" />
+                <FaMapMarkerAlt className="text-blue-600" />
                 Ubicación en el Mapa
               </label>
               
               <button
                 type="button"
                 onClick={() => setShowMap(!showMap)}
-                className="w-full px-4 py-3 bg-primary-opacity border-2 border-primary rounded-xl hover:bg-primary hover:text-white transition font-semibold text-primary flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-blue-100 border-2 border-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition font-semibold text-blue-600 flex items-center justify-center gap-2"
               >
                 <FaMapMarkerAlt />
                 {formData.ubication.lat !== -25.2637 ? 'Cambiar Ubicación' : 'Seleccionar Ubicación'}
@@ -419,10 +484,9 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                     <div className="relative">
                       <div ref={mapContainer} className="h-[60vh] w-full" />
                       
-                      {/* Botón flotante de Mi Ubicación */}
                       <button
                         onClick={handleMyLocation}
-                        className="absolute bottom-6 right-6 p-4 bg-white rounded-full shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110 border-2 border-primary"
+                        className="absolute bottom-6 right-6 p-4 bg-white rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 border-2 border-blue-600"
                         title="Mi ubicación"
                       >
                         <FaCrosshairs className="w-6 h-6" />
@@ -430,7 +494,6 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                     </div>
                     
                     <div className="p-4 bg-gray-50 border-t border-gray-200">
-
                       <div className="flex gap-3">
                         <button
                           onClick={() => setShowMap(false)}
@@ -440,7 +503,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                         </button>
                         <button
                           onClick={confirmLocation}
-                          className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition shadow-lg"
+                          className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg"
                         >
                           Confirmar Ubicación
                         </button>
@@ -455,7 +518,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaMapMarkerAlt className="text-primary" />
+                  <FaMapMarkerAlt className="text-blue-600" />
                   Ciudad
                 </label>
                 <input
@@ -463,13 +526,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   placeholder="Ej: Asunción"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaMapMarkerAlt className="text-primary" />
+                  <FaMapMarkerAlt className="text-blue-600" />
                   Dirección
                 </label>
                 <input
@@ -477,7 +540,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.direction}
                   onChange={(e) => handleInputChange('direction', e.target.value)}
                   placeholder="Dirección específica"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -486,7 +549,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaDollarSign className="text-primary" />
+                  <FaDollarSign className="text-blue-600" />
                   Rango Salarial
                 </label>
                 <input
@@ -494,13 +557,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.salary_range}
                   onChange={(e) => handleInputChange('salary_range', e.target.value)}
                   placeholder="Ej: $2000 - $3000"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaUsers className="text-primary" />
+                  <FaUsers className="text-blue-600" />
                   Vacantes
                 </label>
                 <input
@@ -508,7 +571,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   min="1"
                   value={formData.vacancies}
                   onChange={(e) => handleInputChange('vacancies', parseInt(e.target.value) || 1)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -517,7 +580,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaEnvelope className="text-primary" />
+                  <FaEnvelope className="text-blue-600" />
                   Email de Contacto
                 </label>
                 <input
@@ -525,13 +588,13 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="contacto@empresa.com"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FaPhone className="text-primary" />
+                  <FaPhone className="text-blue-600" />
                   Teléfono
                 </label>
                 <input
@@ -539,7 +602,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                   value={formData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                   placeholder="+595 xxx xxx xxx"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -547,7 +610,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
             {/* Website */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaGlobe className="text-primary" />
+                <FaGlobe className="text-blue-600" />
                 Sitio Web
               </label>
               <input
@@ -555,14 +618,14 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 value={formData.website}
                 onChange={(e) => handleInputChange('website', e.target.value)}
                 placeholder="https://www.empresa.com"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             {/* Position Type */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FaBriefcase className="text-primary" />
+                <FaBriefcase className="text-blue-600" />
                 Tipo de Posición
               </label>
               <input
@@ -570,43 +633,22 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
                 value={formData.position}
                 onChange={(e) => handleInputChange('position', e.target.value)}
                 placeholder="Ej: Tiempo completo, Remoto"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 ring-primary"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            {/* Active Status */}
-{/*             <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
-              <input
-                type="checkbox"
-                checked={formData.isActive}
-                onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                className="w-5 h-5 rounded accent-primary"
-              />
-              <div>
-                <span className="text-sm font-semibold text-gray-700">Publicar como activo</span>
-                <p className="text-xs text-gray-500">El trabajo será visible inmediatamente</p>
-              </div>
-            </label> */}
-
-            {/* Submit Buttons */}
-            <div className="flex gap-3 pt-4">
-{/*               <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition"
-              >
-                Cancelar
-              </button> */}
+            {/* Submit Button */}
+            <div className="pt-4">
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Publicando...
+                    {uploadProgress > 0 ? `Subiendo imágenes... ${uploadProgress}%` : 'Publicando...'}
                   </>
                 ) : (
                   <>
