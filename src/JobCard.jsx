@@ -27,7 +27,7 @@ export default function JobCard({
 }) {
 
   const [dominantColor, setDominantColor] = useState('rgba(255, 255, 255, 1)');
-  const [showContact, setShowContact] = useState(false);
+  const [activeModal, setActiveModal] = useState('gallery'); // 'gallery', 'map', 'contact', 'details'
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
 
@@ -74,7 +74,7 @@ export default function JobCard({
     >
       <div className="mx-auto modal-card overflow-hidden relative flex flex-col h-screen">
         {/* Sección de Imagen - Altura flexible */}
-        <div className="relative w-full flex-1 flex-shrink-1">
+        <div className="relative w-full flex-1 flex-shrink-1 ">
           <div className="absolute inset-0">
             {job.images && job.images.length > 0 ? (
               <Swiper
@@ -86,7 +86,7 @@ export default function JobCard({
                   dynamicBullets: true
                 } : false}
                 modules={[Pagination]}
-                className="w-full h-full"
+                className="w-full h-full "
                 nested={true}
                 allowTouchMove={true}
                 onSwiper={(swiper) => {
@@ -170,17 +170,42 @@ export default function JobCard({
           {/* Botones de acción superiores */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <button>
-                <GalleryHorizontalEnd size={26} strokeWidth={1.5} className="text-black" />
+              <button onClick={() => setActiveModal(activeModal === 'gallery' ? null : 'gallery')}>
+                <GalleryHorizontalEnd 
+                  size={26} 
+                  strokeWidth={1.5} 
+                  className="text-black"
+                  fill={activeModal === 'gallery' ? "currentColor" : "none"}
+                />
               </button>
-              <button onClick={onLocate}>
-                <MapPin size={26} strokeWidth={1.5} className="text-black" />
+              <button onClick={() => {
+                const newState = activeModal === 'map' ? null : 'map';
+                setActiveModal(newState);
+                setShowMap(newState === 'map');
+              }}>
+                <MapPin 
+                  size={26} 
+                  strokeWidth={1.5} 
+                  className="text-black"
+                  fill={activeModal === 'map' ? "currentColor" : "none"}
+                />
               </button>
-              <button onClick={() => setShowContact(true)}>
-                <MessageCircle size={26} strokeWidth={1.5} className="text-black" />
+              <button onClick={() => setActiveModal(activeModal === 'contact' ? null : 'contact')}>
+                <MessageCircle 
+                  size={26} 
+                  strokeWidth={1.5} 
+                  className="text-black"
+                  fill={activeModal === 'contact' ? "currentColor" : "none"}
+                />
               </button>
-              <button>
-                <MoreHorizontal size={26} strokeWidth={1.5} className="text-black" />
+              <button onClick={() => setActiveModal(activeModal === 'details' ? null : 'details')}>
+                {activeModal === 'details' ? (
+                  <div className="w-[26px] h-[26px] bg-black rounded-full flex items-center justify-center">
+                    <MoreHorizontal size={16} strokeWidth={2} className="text-white" />
+                  </div>
+                ) : (
+                  <MoreHorizontal size={26} strokeWidth={1.5} className="text-black" />
+                )}
               </button>
             </div>
             <button onClick={onSave}>
@@ -226,17 +251,20 @@ export default function JobCard({
         </div>
 
         {/* Modales */}
-        {showMap && (
+        {activeModal === 'map' && (
           <JobMapView
             job={job}
-            onClose={() => setShowMap(false)}
+            onClose={() => {
+              setActiveModal(null);
+              setShowMap(false);
+            }}
           />
         )}
 
-        {showContact && (
+        {activeModal === 'contact' && (
           <JobContactView
             job={job}
-            onClose={() => setShowContact(false)}
+            onClose={() => setActiveModal(null)}
           />
         )}
       </div>

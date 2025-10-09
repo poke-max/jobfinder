@@ -517,8 +517,6 @@ export default function JobFeed({ user, onLogout }) {
               const justSavedJob = jobStates[job.id]?.justSaved;
 
               return (
-
-
                 <SwiperSlide key={job.id} virtualIndex={index}>
                   <div className="flex items-center justify-center h-full m-0 ">
                     <JobCard
@@ -533,8 +531,7 @@ export default function JobFeed({ user, onLogout }) {
                       onSave={() => handleSave(job.id)}
                       showMap={showMap}
                       setShowMap={setShowMap}
-                      onColorChange={(color) => handleColorChange(job.id, color)} // ✅ AGREGAR ESTA LÍNEA
-
+                      onColorChange={(color) => handleColorChange(job.id, color)} 
                     />
                   </div>
                 </SwiperSlide>
@@ -542,7 +539,7 @@ export default function JobFeed({ user, onLogout }) {
             })}
           </Swiper>
         </div>
-
+{/* 
         {currentTab === 'inicio' && (
           <>
             {showMap && (
@@ -553,7 +550,7 @@ export default function JobFeed({ user, onLogout }) {
             )}
           </>
         )}
-
+ */}
         {isFetchingNextPage && (
           <div className="absolute bottom-24 left-0 right-0 flex justify-center z-50 pointer-events-none">
             <div className="bg-primary text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 animate-pulse">
