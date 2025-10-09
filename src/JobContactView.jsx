@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Globe, Copy, Check } from 'lucide-react';
-
+import mailIcon from './assets/mail.svg';
 export default function JobContactView({ job, onClose }) {
   const [copiedField, setCopiedField] = useState(null);
 
@@ -29,15 +29,17 @@ export default function JobContactView({ job, onClose }) {
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-xl shadow-sm p-6">
             {!hasContactInfo ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">📭</div>
-                  <p className="text-gray-600 text-lg mb-2">Sin información de contacto</p>
-                  <p className="text-gray-400 text-sm">
-                    Este trabajo no tiene datos de contacto disponibles
-                  </p>
-                </div>
-              </div>
+<div className="flex items-center justify-center min-h-[400px]">
+  <div className="text-center">
+    <div className="flex justify-center mb-4">
+      <img src={mailIcon} alt="Mail" className="w-16 h-16" />
+    </div>
+    <p className="text-gray-600 text-lg mb-2">Sin información de contacto</p>
+    <p className="text-gray-400 text-sm">
+      Este trabajo no tiene datos de contacto disponibles
+    </p>
+  </div>
+</div>
             ) : (
               <div className="space-y-6">
                 {/* Email */}
