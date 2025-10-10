@@ -57,7 +57,6 @@ export default function JobFeed({ user, onLogout }) {
   const [initialJobId, setInitialJobId] = useState(null);
   const [initialJobCreatedAt, setInitialJobCreatedAt] = useState(null);
   const [isReadingProgress, setIsReadingProgress] = useState(true);
-// MODIFICAR el useEffect inicial
 useEffect(() => {
   const readInitialProgress = async () => {
     if (!userId) {
@@ -66,43 +65,90 @@ useEffect(() => {
     }
 
     try {
-      // 1. PRIMERO intentar Firestore (fuente de verdad)
+      console.log('🔍 Leyendo progreso...');
+      
+      // 1. Lee Firestore (fuente de verdad remota)
       const userDocRef = doc(db, 'users', userId);
       const userDoc = await getDoc(userDocRef);
       const firestoreProgress = userDoc.exists() ? userDoc.data().lastViewedJob : null;
 
-      if (firestoreProgress) {
-        setInitialJobId(firestoreProgress.jobId);
-        setInitialJobCreatedAt(firestoreProgress.jobCreatedAt);
+      // 2. Lee IndexedDB (cache local)
+      const localProgress = await getProgress(userId);
+
+      console.log('📊 Progreso encontrado:');
+      console.log('  Firebase:', firestoreProgress ? {
+        jobId: firestoreProgress.jobId,
+        timestamp: new Date(firestoreProgress.timestamp),
+        ms: firestoreProgress.timestamp
+      } : 'No existe');
+      console.log('  Local:', localProgress ? {
+        jobId: localProgress.lastJobId,
+        timestamp: new Date(localProgress.timestamp),
+        ms: localProgress.timestamp
+      } : 'No existe');
+
+      // 3. COMPARACIÓN MEJORADA
+      let progressToUse = null;
+      let needsSync = false;
+
+      if (firestoreProgress && localProgress) {
+        // Ambos existen → comparar timestamps
+        const firestoreTime = firestoreProgress.timestamp || 0;
+        const localTime = localProgress.timestamp || 0;
         
-        // Guardar en IndexedDB local para próxima vez sin conexión
-        await saveProgress(
-          userId, 
-          firestoreProgress.jobId, 
-          firestoreProgress.index, 
-          firestoreProgress.jobCreatedAt
-        );
+        if (firestoreTime > localTime) {
+          progressToUse = {
+            lastJobId: firestoreProgress.jobId,
+            jobCreatedAt: firestoreProgress.jobCreatedAt,
+            lastIndex: firestoreProgress.index || 0,
+            timestamp: firestoreTime
+          };
+          needsSync = true; // Necesita actualizar IndexedDB
+          console.log('✅ Usando Firebase (más reciente)');
+        } else {
+          progressToUse = localProgress;
+          console.log('✅ Usando Local (más reciente o igual)');
+        }
+        
+      } else if (firestoreProgress) {
+        // Solo Firebase existe
+        progressToUse = {
+          lastJobId: firestoreProgress.jobId,
+          jobCreatedAt: firestoreProgress.jobCreatedAt,
+          lastIndex: firestoreProgress.index || 0,
+          timestamp: firestoreProgress.timestamp || Date.now()
+        };
+        needsSync = true;
+        console.log('✅ Usando Firebase (único disponible)');
+        
+      } else if (localProgress) {
+        // Solo local existe
+        progressToUse = localProgress;
+        console.log('✅ Usando Local (único disponible)');
       } else {
-        // 2. FALLBACK: Si Firestore falla/vacío, usar IndexedDB
-        const localProgress = await getProgress(userId);
-        if (localProgress) {
-          setInitialJobId(localProgress.lastJobId);
-          setInitialJobCreatedAt(localProgress.jobCreatedAt);
+        console.log('ℹ️ No hay progreso guardado');
+      }
+
+      // 4. Aplicar progreso
+      if (progressToUse) {
+        console.log('📍 Restaurando a:', progressToUse.lastJobId);
+        setInitialJobId(progressToUse.lastJobId);
+        setInitialJobCreatedAt(progressToUse.jobCreatedAt);
+
+        // 5. SINCRONIZAR IndexedDB si es necesario
+        if (needsSync) {
+          console.log('🔄 Sincronizando IndexedDB...');
+          await saveProgress(
+            userId, 
+            progressToUse.lastJobId, 
+            progressToUse.lastIndex,
+            progressToUse.jobCreatedAt
+          );
+          console.log('✅ IndexedDB sincronizado');
         }
       }
     } catch (error) {
-      console.error('Error reading from Firestore, trying IndexedDB:', error);
-      
-      // Si Firestore falla (sin conexión), usar IndexedDB
-      try {
-        const localProgress = await getProgress(userId);
-        if (localProgress) {
-          setInitialJobId(localProgress.lastJobId);
-          setInitialJobCreatedAt(localProgress.jobCreatedAt);
-        }
-      } catch (localError) {
-        console.error('Error reading from IndexedDB:', localError);
-      }
+      console.error('❌ Error reading initial progress:', error);
     } finally {
       setIsReadingProgress(false);
     }
@@ -336,29 +382,32 @@ const saveProgressDebounced = useCallback((index, jobId) => {
 
   saveTimerRef.current = setTimeout(async () => {
     try {
-      const currentJob = jobs[index]; // ← Obtener el job aquí
+      const currentJob = jobs[index];
+      const timestamp = Date.now(); // ← MISMO timestamp para ambos
       
-      // Guardar en IndexedDB (inmediato)
+      console.log('💾 Guardando progreso:', { index, jobId, timestamp: new Date(timestamp) });
+      
+      // 1. Guardar en IndexedDB (rápido)
       await saveProgress(userId, jobId, index, currentJob?.createdAt);
       lastSavedIndexRef.current = index;
 
-      // Guardar en Firestore cada 10 slides (backup)
-      if (index % 10 === 0) {
+      // 2. Guardar en Firestore (cada 5 slides para testing, luego cambiar a 10)
+      if (index % 5 === 0) {
         const userDocRef = doc(db, 'users', userId);
         await setDoc(userDocRef, {
           lastViewedJob: {
-            jobId,
+            jobId,           // ← Sin prefijo "last"
             index,
-            timestamp: Date.now(),
+            timestamp,       // ← Mismo timestamp
             jobCreatedAt: currentJob?.createdAt || null
           }
         }, { merge: true });
-        console.log('✅ Backup Firebase cada 10 slides');
+        console.log('✅ Guardado en Firebase (backup)');
       }
     } catch (error) {
-      console.error('Error saving progress:', error);
+      console.error('❌ Error saving progress:', error);
     }
-  }, 0); // ← Esto debería ser > 0 para que sea debounce real
+  }, 300); // ← 300ms de debounce
 }, [userId, jobs]);
 
   // 2. Auto-guardado cada 30s (protección contra cortes)
@@ -366,26 +415,29 @@ useEffect(() => {
   const autoSaveInterval = setInterval(async () => {
     if (jobs[currentIndex]) {
       const currentJob = jobs[currentIndex];
+      const timestamp = Date.now(); // ← MISMO timestamp
       
       try {
-        // IndexedDB (siempre funciona)
+        // 1. IndexedDB (siempre)
         await saveProgress(userId, currentJob.id, currentIndex, currentJob.createdAt);
+        console.log('💾 Auto-guardado local');
         
-        // Firebase (intenta, falla silenciosamente sin conexión)
+        // 2. Firestore (intentar)
         const userDocRef = doc(db, 'users', userId);
         await setDoc(userDocRef, {
           lastViewedJob: {
             jobId: currentJob.id,
             index: currentIndex,
-            timestamp: Date.now(),
+            timestamp,
             jobCreatedAt: currentJob.createdAt || null
           }
         }, { merge: true });
+        console.log('✅ Auto-guardado: Firebase + Local sincronizados');
       } catch (error) {
-        console.log('⚠️ Auto-guardado: solo local');
+        console.log('⚠️ Auto-guardado: solo local (sin conexión)');
       }
     }
-  }, 30000); // Cada 30 segundos
+  }, 30000);
 
   return () => clearInterval(autoSaveInterval);
 }, [currentIndex, jobs, userId]);
@@ -731,6 +783,8 @@ if (isReadingProgress || isLoading) {
               );
             })}
           </Swiper>
+
+          
         </div>
 
 
@@ -840,6 +894,28 @@ if (isReadingProgress || isLoading) {
         user={user}
       />
 
+
+{/* BOTÓN DEBUG - REMOVER EN PRODUCCIÓN */}
+<button 
+  onClick={async () => {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    const localProgress = await getProgress(userId);
+    
+    console.log('=== 🔍 DEBUG PROGRESO ===');
+    console.log('Firebase:', userDoc.data()?.lastViewedJob);
+    console.log('Local (IndexedDB):', localProgress);
+    console.log('Job actual:', jobs[currentIndex]?.id);
+    console.log('Index actual:', currentIndex);
+    
+    alert('Ver consola para detalles');
+  }}
+  className="fixed top-20 right-4 bg-red-500 text-white px-3 py-2 rounded-lg shadow-lg z-[9999] text-xs font-bold"
+>
+  🔍 DEBUG
+</button>
+      
+
       {!showMap && (
 
 
@@ -899,6 +975,8 @@ if (isReadingProgress || isLoading) {
           )}
         </div>
       )}
+
+      
     </>
   );
 }
