@@ -6,7 +6,7 @@ import { X, Home, Map, PlusCircle, Star, User, MapPin, Search, MessageCircle, Fi
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/virtual'; // ← Agregado CSS para virtual
-
+import { saveProgress, getProgress } from './utils/indexedDBHelper';
 import { collection, query, limit, startAfter, getDoc, getDocs, doc, setDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { FaTimes, FaSearch, FaMapPin } from 'react-icons/fa';
 
@@ -43,7 +43,9 @@ export default function JobFeed({ user, onLogout }) {
   const swiperEnabledRef = useRef(true);
   const swiperRef = useRef(null);
   const previousIndexRef = useRef(0);
-
+  const lastSavedIndexRef = useRef(0);
+  const saveTimerRef = useRef(null);
+  const isRestoringRef = useRef(false);
   const handleColorChange = useCallback((jobId, color) => {
     console.log('Color recibido:', color, 'para job:', jobId);
     setDominantColors(prev => ({
@@ -237,7 +239,40 @@ export default function JobFeed({ user, onLogout }) {
     saveMutation.mutate({ jobId, isSaved });
   }, [savedJobs, saveMutation]);
 
+  const saveProgressDebounced = useCallback((index, jobId) => {
+    // Solo guardar si avanzó al menos 2 slides
+    if (Math.abs(index - lastSavedIndexRef.current) < 2) return;
+
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        // Guardar en IndexedDB (inmediato)
+        await saveProgress(userId, jobId, index);
+        lastSavedIndexRef.current = index;
+
+        // Guardar en Firestore cada 10 slides (backup)
+        if (index % 10 === 0) {
+          const userDocRef = doc(db, 'users', userId);
+          await setDoc(userDocRef, {
+            lastViewedJob: {
+              jobId,
+              index,
+              timestamp: Date.now()
+            }
+          }, { merge: true });
+        }
+      } catch (error) {
+        console.error('Error saving progress:', error);
+      }
+    }, 1000); // Debounce de 1 segundo
+  }, [userId]);
+
   const handleSlideChange = useCallback((swiper) => {
+    if (isRestoringRef.current) return; // No procesar durante restauración
+
     const newIndex = swiper.activeIndex;
     const previousIndex = previousIndexRef.current;
 
@@ -247,6 +282,11 @@ export default function JobFeed({ user, onLogout }) {
 
     setCurrentIndex(newIndex);
     previousIndexRef.current = newIndex;
+
+    // Guardar progreso
+    if (jobs[newIndex]) {
+      saveProgressDebounced(newIndex, jobs[newIndex].id);
+    }
 
     // Prefetch más agresivo
     if (newIndex >= jobs.length - 30 && hasNextPage && !isFetchingNextPage) {
@@ -277,7 +317,7 @@ export default function JobFeed({ user, onLogout }) {
         return newDetails;
       });
     }
-  }, [jobs, hasNextPage, isFetchingNextPage, fetchNextPage, handleDismiss]);
+  }, [jobs, hasNextPage, isFetchingNextPage, fetchNextPage, handleDismiss, saveProgressDebounced]);
 
   const handleTabChange = useCallback((tab) => {
     setCurrentTab(tab);
@@ -381,6 +421,101 @@ export default function JobFeed({ user, onLogout }) {
 
     preloadImages();
   }, [currentIndex, jobs]);
+
+
+
+  // Restaurar posición al cargar
+  useEffect(() => {
+    const restorePosition = async () => {
+      if (!userId || !swiperRef.current || jobs.length === 0) return;
+
+      try {
+        isRestoringRef.current = true;
+
+        // 1. Leer de IndexedDB primero (rápido)
+        const localProgress = await getProgress(userId);
+
+        // 2. Leer de Firestore (backup)
+        const userDocRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userDocRef);
+        const firestoreProgress = userDoc.exists() ? userDoc.data().lastViewedJob : null;
+
+        // 3. Usar el más reciente
+        let progressToUse = localProgress;
+        if (firestoreProgress && (!localProgress || firestoreProgress.timestamp > localProgress.timestamp)) {
+          progressToUse = firestoreProgress;
+        }
+
+        if (!progressToUse) {
+          isRestoringRef.current = false;
+          return;
+        }
+
+        // 4. Buscar el job por ID
+        const foundIndex = jobs.findIndex(j => j.id === progressToUse.lastJobId);
+
+        if (foundIndex !== -1) {
+          // Job encontrado, ir a esa posición
+          swiperRef.current.slideTo(foundIndex, 0); // 0 = sin animación
+          setCurrentIndex(foundIndex);
+          previousIndexRef.current = foundIndex;
+          lastSavedIndexRef.current = foundIndex;
+        } else if (progressToUse.lastIndex < jobs.length) {
+          // Job no encontrado, usar índice como fallback
+          swiperRef.current.slideTo(progressToUse.lastIndex, 0);
+          setCurrentIndex(progressToUse.lastIndex);
+          previousIndexRef.current = progressToUse.lastIndex;
+          lastSavedIndexRef.current = progressToUse.lastIndex;
+        }
+
+        // Pequeño delay para asegurar que Swiper procesó el cambio
+        setTimeout(() => {
+          isRestoringRef.current = false;
+        }, 100);
+
+      } catch (error) {
+        console.error('Error restoring position:', error);
+        isRestoringRef.current = false;
+      }
+    };
+
+    // Solo ejecutar cuando los jobs estén cargados
+    if (jobs.length > 0 && !isRestoringRef.current) {
+      restorePosition();
+    }
+  }, [jobs.length, userId]); // Dependencias mínimas
+
+  // Guardar progreso al cerrar/salir
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (jobs[currentIndex]) {
+        try {
+          // Guardar final en ambos
+          await saveProgress(userId, jobs[currentIndex].id, currentIndex);
+
+          const userDocRef = doc(db, 'users', userId);
+          await setDoc(userDocRef, {
+            lastViewedJob: {
+              jobId: jobs[currentIndex].id,
+              index: currentIndex,
+              timestamp: Date.now()
+            }
+          }, { merge: true });
+        } catch (error) {
+          console.error('Error saving on exit:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [currentIndex, jobs, userId]);
 
   // ==================== RENDER ====================
   if (!user) {

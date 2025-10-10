@@ -75,14 +75,36 @@ const handleSave = () => {
 };
 
   // Cargar el color de la primera imagen disponible
+// Cargar el color de la primera imagen disponible con reintentos
   useEffect(() => {
     if (allImages.length > 0) {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
       img.src = allImages[0];
       img.onload = () => extractDominantColor(img);
+      
+      // Si falla, reintentar cuando vuelva la conexión
+      img.onerror = () => {
+        const retryLoad = () => {
+          const retryImg = new Image();
+          retryImg.crossOrigin = 'Anonymous';
+          retryImg.src = allImages[0];
+          retryImg.onload = () => extractDominantColor(retryImg);
+        };
+        
+        // Escuchar evento de conexión restaurada
+        const handleOnline = () => {
+          retryLoad();
+          window.removeEventListener('online', handleOnline);
+        };
+        window.addEventListener('online', handleOnline);
+        
+        // También reintentar después de 3 segundos por si acaso
+        setTimeout(retryLoad, 3000);
+      };
     }
   }, [job.images, job.url]);
+
 
   useEffect(() => {
     // Cuando se abre el mapa o contacto, deshabilitar swiper padre
