@@ -609,61 +609,61 @@ export default function JobFeed({ user, onLogout }) {
       {!showMap && (
 
 
-<div className="job-search-header">
-  {showSearchBar ? (
-    <div className="job-search-wrapper">
-      <div className="job-search-input-container">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar empleos..."
-          style={{ 
-            color: headerTextColor,
-            '--placeholder-color': headerTextColor,
-            '--placeholder-opacity': 0.6
-          }}
-          className="job-search-input"
-          autoFocus
-        />
-        <Search
-          className="job-search-icon"
-          style={{ color: headerTextColor }}
-        />
-        <div className="job-search-actions">
-          {isSearching && (
-            <div
-              className="job-search-spinner"
-              style={{ borderBottomColor: headerTextColor }}
-            ></div>
+        <div className="job-search-header">
+          {showSearchBar ? (
+            <div className="job-search-wrapper">
+              <div className="job-search-input-container">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar empleos..."
+                  style={{
+                    color: headerTextColor,
+                    '--placeholder-color': headerTextColor,
+                    '--placeholder-opacity': 0.6
+                  }}
+                  className="job-search-input"
+                  autoFocus
+                />
+                <Search
+                  className="job-search-icon"
+                  style={{ color: headerTextColor }}
+                />
+                <div className="job-search-actions">
+                  {isSearching && (
+                    <div
+                      className="job-search-spinner"
+                      style={{ borderBottomColor: headerTextColor }}
+                    ></div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setShowSearchBar(false);
+                    }}
+                    className="job-search-close"
+                    aria-label="Cerrar búsqueda"
+                  >
+                    <X style={{ color: headerTextColor }} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="job-search-collapsed">
+              <h2 style={{ color: headerTextColor }} className="job-search-title pl-2">
+                AppName
+              </h2>
+              <button
+                onClick={() => setShowSearchBar(true)}
+                className="job-search-toggle"
+              >
+                <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
+              </button>
+            </div>
           )}
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setShowSearchBar(false);
-            }}
-            className="job-search-close"
-            aria-label="Cerrar búsqueda"
-          >
-            <X style={{ color: headerTextColor }} />
-          </button>
         </div>
-      </div>
-    </div>
-  ) : (
-    <div className="job-search-collapsed">
-      <h2 style={{ color: headerTextColor }} className="job-search-title">
-        AppName
-      </h2>
-      <button
-        onClick={() => setShowSearchBar(true)}
-        className="job-search-toggle"
-      >
-        <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
-      </button>
-    </div>
-  )}
-</div>
       )}
     </>
   );
