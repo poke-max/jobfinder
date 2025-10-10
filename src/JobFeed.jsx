@@ -241,7 +241,7 @@ export default function JobFeed({ user, onLogout }) {
 
   const saveProgressDebounced = useCallback((index, jobId) => {
     // Solo guardar si avanzó al menos 2 slides
-    if (Math.abs(index - lastSavedIndexRef.current) < 2) return;
+    if (Math.abs(index - lastSavedIndexRef.current) < 1) return;
 
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
@@ -408,9 +408,11 @@ export default function JobFeed({ user, onLogout }) {
 
   // Después de tus otros useEffect
   useEffect(() => {
-    // Precargar próximas 15 imágenes
     const preloadImages = async () => {
-      for (let i = currentIndex + 1; i <= Math.min(currentIndex + 15, jobs.length - 1); i++) {
+      // Solo precarga los próximos 3-5 slides (los que realmente puede ver)
+      const preloadCount = 5; // ← Ajustable
+
+      for (let i = currentIndex + 1; i <= Math.min(currentIndex + preloadCount, jobs.length - 1); i++) {
         const job = jobs[i];
         if (job?.imageUrl) {
           const img = new Image();
@@ -418,7 +420,6 @@ export default function JobFeed({ user, onLogout }) {
         }
       }
     };
-
     preloadImages();
   }, [currentIndex, jobs]);
 
@@ -557,7 +558,7 @@ export default function JobFeed({ user, onLogout }) {
               borderTopColor: 'white'
             }}
           ></div>
-          <p className="text-white text-lg">Cargando empleos...</p>
+          <p className="text-white text-sm">Cargando empleos...</p>
         </div>
       </div>
     );

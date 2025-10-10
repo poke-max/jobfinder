@@ -108,12 +108,12 @@ export default function Login({ onLoginSuccess }) {
       </div>
 
       {/* Botones de login en la parte inferior */}
-      <div className="w-full max-w-md space-y-4 pb-8">
+      <div className="w-full max-w-md space-y-4 pb-8 px-6">
         {/* Botón de Google */}
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full bg-white rounded-full py-4 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-full bg-white rounded-full py-2 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {loading ? (
             <>
@@ -131,7 +131,7 @@ export default function Login({ onLoginSuccess }) {
           ) : (
             <>
               <FcGoogle className="text-2xl" />
-              <span className="font-bold text-lg text-gray-800">
+              <span className="font-bold text-lg text-gray-800 text-sm">
                 Continuar con Google
               </span>
             </>
@@ -142,21 +142,21 @@ export default function Login({ onLoginSuccess }) {
         <button
           onClick={handleFacebookLogin}
           disabled={loading}
-          className="w-full bg-white rounded-full py-4 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-full bg-white rounded-full  py-2 px-6 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           <FaFacebook className="text-2xl text-blue-600" />
-          <span className="font-bold text-lg text-gray-800">
+          <span className="font-bold text-lg text-gray-800 text-sm">
             Continuar con Facebook
           </span>
         </button>
 
         {/* Enlace de problemas */}
-        <button className="w-full text-white text-center py-3 font-semibold hover:underline transition-all">
+        <button className="w-full text-white text-sm text-center py-3 font-semibold hover:underline transition-all">
           ¿No consigues iniciar sesión?
         </button>
 
         {/* Texto legal */}
-        <p className="text-xs text-white text-center px-4 opacity-90 leading-relaxed mt-4">
+        <p className="text-xs text-white/70 text-center px-4 opacity-90 leading-relaxed mt-4">
           Al iniciar sesión, estás aceptando nuestros{' '}
           <a href="#" className="underline font-semibold">Términos</a>. Obtén más información sobre cómo procesamos tus datos en nuestra{' '}
           <a href="https://www.termsfeed.com/live/67a514a4-84e9-456e-b348-b21756fcdef4" className="underline font-semibold">Política de privacidad</a> y{' '}

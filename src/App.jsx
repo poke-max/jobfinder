@@ -48,7 +48,7 @@ export default function App() {
               borderTopColor: 'white'
             }}
           ></div>
-          <p className="text-white text-lg">Verificando sesión...</p>
+          <p className="text-white text-sm">Verificando sesión...</p>
         </div>
       </div>
     );

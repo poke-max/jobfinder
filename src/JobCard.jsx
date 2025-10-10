@@ -33,6 +33,7 @@ export default function JobCard({
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
   const parentSwiperEnabledRef = useRef(null);
+    const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
     ? job.images
@@ -255,7 +256,7 @@ const handleSave = () => {
 
 
         {/* Sección de Información - Altura fija 25% */}
-        <div className="relative bottom-0 left-0 right-0 max-h-[50vh] overflow-y-auto bg-white flex flex-col px-4 pt-3 pb-4 z-90">
+        <div className={`relative bottom-0 left-0 right-0 ${isInfoExpanded ? 'max-h-[100vh]' : 'max-h-[50vh]'} overflow-y-auto bg-white flex flex-col px-4 pt-3 pb-4 z-90 transition-all duration-300 ease-in-out`}>
           {/* Botones de acción superiores */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
@@ -295,10 +296,10 @@ const handleSave = () => {
                 />
               </button>
               <button onClick={() => {
-                setActiveModal(activeModal === 'details' ? 'gallery' : 'details')
+                setIsInfoExpanded(!isInfoExpanded);
                 setShowMap(false);
               }}>
-                {activeModal === 'details' ? (
+                {isInfoExpanded ? (
                   <div className="w-[26px] h-[26px] bg-black rounded-full flex items-center justify-center">
                     <MoreHorizontal size={16} strokeWidth={2} className="text-white" />
                   </div>
