@@ -239,37 +239,68 @@ export default function JobFeed({ user, onLogout }) {
     saveMutation.mutate({ jobId, isSaved });
   }, [savedJobs, saveMutation]);
 
-  const saveProgressDebounced = useCallback((index, jobId) => {
-    // Solo guardar si avanzó al menos 2 slides
-    if (Math.abs(index - lastSavedIndexRef.current) < 1) return;
+const saveProgressDebounced = useCallback((index, jobId) => {
+  if (Math.abs(index - lastSavedIndexRef.current) < 1) return;
 
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
+  if (saveTimerRef.current) {
+    clearTimeout(saveTimerRef.current);
+  }
 
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        // Guardar en IndexedDB (inmediato)
-        await saveProgress(userId, jobId, index, currentJob?.createdAt); // ← Pasar createdAt
-        lastSavedIndexRef.current = index;
+  saveTimerRef.current = setTimeout(async () => {
+    try {
+      const currentJob = jobs[index]; // ← Obtener el job aquí
+      
+      // Guardar en IndexedDB (inmediato)
+      await saveProgress(userId, jobId, index, currentJob?.createdAt);
+      lastSavedIndexRef.current = index;
 
-        // Guardar en Firestore cada 10 slides (backup)
-        if (index % 1 === 0) {
-          const userDocRef = doc(db, 'users', userId);
-          await setDoc(userDocRef, {
-            lastViewedJob: {
-              jobId,
-              index,
-              timestamp: Date.now(),
-              jobCreatedAt: currentJob?.createdAt || null  // ← NUEVO CAMPO
-            }
-          }, { merge: true });
-        }
-      } catch (error) {
-        console.error('Error saving progress:', error);
+      // Guardar en Firestore cada 10 slides (backup)
+      if (index % 10 === 0) {
+        const userDocRef = doc(db, 'users', userId);
+        await setDoc(userDocRef, {
+          lastViewedJob: {
+            jobId,
+            index,
+            timestamp: Date.now(),
+            jobCreatedAt: currentJob?.createdAt || null
+          }
+        }, { merge: true });
+        console.log('✅ Backup Firebase cada 10 slides');
       }
-    }, 1000); // Debounce de 1 segundo
-  }, [userId, jobs]);
+    } catch (error) {
+      console.error('Error saving progress:', error);
+    }
+  }, 0); // ← Esto debería ser > 0 para que sea debounce real
+}, [userId, jobs]);
+
+  // 2. Auto-guardado cada 30s (protección contra cortes)
+useEffect(() => {
+  const autoSaveInterval = setInterval(async () => {
+    if (jobs[currentIndex]) {
+      const currentJob = jobs[currentIndex];
+      
+      try {
+        // IndexedDB (siempre funciona)
+        await saveProgress(userId, currentJob.id, currentIndex, currentJob.createdAt);
+        
+        // Firebase (intenta, falla silenciosamente sin conexión)
+        const userDocRef = doc(db, 'users', userId);
+        await setDoc(userDocRef, {
+          lastViewedJob: {
+            jobId: currentJob.id,
+            index: currentIndex,
+            timestamp: Date.now(),
+            jobCreatedAt: currentJob.createdAt || null
+          }
+        }, { merge: true });
+      } catch (error) {
+        console.log('⚠️ Auto-guardado: solo local');
+      }
+    }
+  }, 30000); // Cada 30 segundos
+
+  return () => clearInterval(autoSaveInterval);
+}, [currentIndex, jobs, userId]);
 
   const handleSlideChange = useCallback((swiper) => {
     if (isRestoringRef.current) return; // No procesar durante restauración
