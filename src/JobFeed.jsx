@@ -54,6 +54,62 @@ export default function JobFeed({ user, onLogout }) {
     }));
   }, []);
 
+  const [initialJobId, setInitialJobId] = useState(null);
+  const [initialJobCreatedAt, setInitialJobCreatedAt] = useState(null);
+  const [isReadingProgress, setIsReadingProgress] = useState(true);
+// MODIFICAR el useEffect inicial
+useEffect(() => {
+  const readInitialProgress = async () => {
+    if (!userId) {
+      setIsReadingProgress(false);
+      return;
+    }
+
+    try {
+      // 1. PRIMERO intentar Firestore (fuente de verdad)
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
+      const firestoreProgress = userDoc.exists() ? userDoc.data().lastViewedJob : null;
+
+      if (firestoreProgress) {
+        setInitialJobId(firestoreProgress.jobId);
+        setInitialJobCreatedAt(firestoreProgress.jobCreatedAt);
+        
+        // Guardar en IndexedDB local para próxima vez sin conexión
+        await saveProgress(
+          userId, 
+          firestoreProgress.jobId, 
+          firestoreProgress.index, 
+          firestoreProgress.jobCreatedAt
+        );
+      } else {
+        // 2. FALLBACK: Si Firestore falla/vacío, usar IndexedDB
+        const localProgress = await getProgress(userId);
+        if (localProgress) {
+          setInitialJobId(localProgress.lastJobId);
+          setInitialJobCreatedAt(localProgress.jobCreatedAt);
+        }
+      }
+    } catch (error) {
+      console.error('Error reading from Firestore, trying IndexedDB:', error);
+      
+      // Si Firestore falla (sin conexión), usar IndexedDB
+      try {
+        const localProgress = await getProgress(userId);
+        if (localProgress) {
+          setInitialJobId(localProgress.lastJobId);
+          setInitialJobCreatedAt(localProgress.jobCreatedAt);
+        }
+      } catch (localError) {
+        console.error('Error reading from IndexedDB:', localError);
+      }
+    } finally {
+      setIsReadingProgress(false);
+    }
+  };
+
+  readInitialProgress();
+}, [userId]);
   // Función para determinar si usar texto blanco o negro
   const getTextColor = (color) => {
     if (!color) return '#ffffff';
@@ -87,50 +143,82 @@ export default function JobFeed({ user, onLogout }) {
     }
   }, []);
   // ==================== FETCH JOBS ====================
-  const {
-    data: infiniteJobsData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-    error
-  } = useInfiniteQuery({
-    queryKey: ['jobs'],
-    queryFn: async ({ pageParam = null }) => {
-      const jobsRef = collection(db, 'jobs');
-      const batchSize = 50;
+const {
+  data: infiniteJobsData,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  isLoading,
+  isError,
+  error
+} = useInfiniteQuery({
+  queryKey: ['jobs', initialJobId], // ← Incluye initialJobId como dependencia
+  queryFn: async ({ pageParam = null }) => {
+    const jobsRef = collection(db, 'jobs');
+    const batchSize = 50;
 
-      let q;
-      if (pageParam) {
-        q = query(jobsRef, orderBy('createdAt', 'asc'), startAfter(pageParam), limit(batchSize));
-      } else {
-        q = query(jobsRef, orderBy('createdAt', 'asc'), limit(batchSize));
+    let q;
+    
+    // PRIMERA PÁGINA: Cargar desde el job guardado
+    if (!pageParam && initialJobId && initialJobCreatedAt) {
+      // Buscar el documento específico
+      const jobDocRef = doc(db, 'jobs', initialJobId);
+      const jobDoc = await getDoc(jobDocRef);
+      
+      if (jobDoc.exists()) {
+        // Cargar 50 jobs a partir de este (inclusive)
+        q = query(
+          jobsRef, 
+          orderBy('createdAt', 'asc'), 
+          startAfter(jobDoc), // Empieza DESPUÉS del job guardado
+          limit(batchSize)
+        );
+        
+        const snapshot = await getDocs(q);
+        const fetchedJobs = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+
+        // Incluir el job guardado como primer elemento
+        return {
+          jobs: [{ id: jobDoc.id, ...jobDoc.data() }, ...fetchedJobs],
+          nextCursor: snapshot.docs[snapshot.docs.length - 1]
+        };
       }
+    }
+    
+    // Lógica normal para páginas subsecuentes o si no hay progreso guardado
+    if (pageParam) {
+      q = query(jobsRef, orderBy('createdAt', 'asc'), startAfter(pageParam), limit(batchSize));
+    } else {
+      q = query(jobsRef, orderBy('createdAt', 'asc'), limit(batchSize));
+    }
 
-      const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
 
-      if (snapshot.empty) {
-        return { jobs: [], nextCursor: null };
-      }
+    if (snapshot.empty) {
+      return { jobs: [], nextCursor: null };
+    }
 
-      const fetchedJobs = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+    const fetchedJobs = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    }));
 
-      return {
-        jobs: fetchedJobs,
-        nextCursor: snapshot.docs[snapshot.docs.length - 1]
-      };
-    },
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    staleTime: Infinity,
-    gcTime: Infinity, // ← Cambiado de cacheTime
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
+    return {
+      jobs: fetchedJobs,
+      nextCursor: snapshot.docs[snapshot.docs.length - 1]
+    };
+  },
+  enabled: !isReadingProgress, // ← Solo ejecuta cuando termine de leer el progreso
+  getNextPageParam: (lastPage) => lastPage.nextCursor,
+  staleTime: Infinity,
+  gcTime: Infinity,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+});
 
   const jobs = useMemo(() =>
     infiniteJobsData?.pages.flatMap(page => page.jobs) || [],
@@ -458,65 +546,34 @@ useEffect(() => {
 
 
   // Restaurar posición al cargar
-  useEffect(() => {
-    const restorePosition = async () => {
-      if (!userId || !swiperRef.current || jobs.length === 0) return;
+useEffect(() => {
+  const restorePosition = async () => {
+    if (!userId || !swiperRef.current || jobs.length === 0) return;
+    if (!initialJobId) return; // Si no hay job guardado, empezar en 0
 
-      try {
-        isRestoringRef.current = true;
+    try {
+      isRestoringRef.current = true;
 
-        // 1. Leer de IndexedDB primero (rápido)
-        const localProgress = await getProgress(userId);
+      // El job guardado SIEMPRE está en índice 0 (porque lo cargamos primero)
+      swiperRef.current.slideTo(0, 0); // Sin animación
+      setCurrentIndex(0);
+      previousIndexRef.current = 0;
+      lastSavedIndexRef.current = 0;
 
-        // 2. Leer de Firestore (backup)
-        const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        const firestoreProgress = userDoc.exists() ? userDoc.data().lastViewedJob : null;
-
-        // 3. Usar el más reciente
-        let progressToUse = localProgress;
-        if (firestoreProgress && (!localProgress || firestoreProgress.timestamp > localProgress.timestamp)) {
-          progressToUse = firestoreProgress;
-        }
-
-        if (!progressToUse) {
-          isRestoringRef.current = false;
-          return;
-        }
-
-        // 4. Buscar el job por ID
-        const foundIndex = jobs.findIndex(j => j.id === progressToUse.lastJobId);
-
-        if (foundIndex !== -1) {
-          // Job encontrado, ir a esa posición
-          swiperRef.current.slideTo(foundIndex, 0); // 0 = sin animación
-          setCurrentIndex(foundIndex);
-          previousIndexRef.current = foundIndex;
-          lastSavedIndexRef.current = foundIndex;
-        } else if (progressToUse.lastIndex < jobs.length) {
-          // Job no encontrado, usar índice como fallback
-          swiperRef.current.slideTo(progressToUse.lastIndex, 0);
-          setCurrentIndex(progressToUse.lastIndex);
-          previousIndexRef.current = progressToUse.lastIndex;
-          lastSavedIndexRef.current = progressToUse.lastIndex;
-        }
-
-        // Pequeño delay para asegurar que Swiper procesó el cambio
-        setTimeout(() => {
-          isRestoringRef.current = false;
-        }, 100);
-
-      } catch (error) {
-        console.error('Error restoring position:', error);
+      setTimeout(() => {
         isRestoringRef.current = false;
-      }
-    };
+      }, 100);
 
-    // Solo ejecutar cuando los jobs estén cargados
-    if (jobs.length > 0 && !isRestoringRef.current) {
-      restorePosition();
+    } catch (error) {
+      console.error('Error restoring position:', error);
+      isRestoringRef.current = false;
     }
-  }, [jobs.length, userId]); // Dependencias mínimas
+  };
+
+  if (jobs.length > 0 && !isRestoringRef.current) {
+    restorePosition();
+  }
+}, [jobs.length, userId, initialJobId]);
 
   // Guardar progreso al cerrar/salir
 useEffect(() => {
@@ -582,27 +639,28 @@ useEffect(() => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div
-        className="flex z-50 inset-0 items-center justify-center min-h-screen"
-        style={{
-          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
-        }}
-      >
-        <div className="text-center">
-          <div
-            className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
-            style={{
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-              borderTopColor: 'white'
-            }}
-          ></div>
-          <p className="text-white text-sm">Cargando empleos...</p>
-        </div>
+// 5. MODIFICAR el loading screen para incluir lectura de progreso
+if (isReadingProgress || isLoading) {
+  return (
+    <div className="flex z-50 inset-0 items-center justify-center min-h-screen"
+      style={{
+        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
+      }}
+    >
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
+          style={{
+            borderColor: 'rgba(255, 255, 255, 0.3)',
+            borderTopColor: 'white'
+          }}
+        ></div>
+        <p className="text-white text-sm">
+          {isReadingProgress ? 'Restaurando tu progreso...' : 'Cargando empleos...'}
+        </p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const filteredJobs = getFilteredJobs();
 
