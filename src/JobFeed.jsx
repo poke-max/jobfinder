@@ -103,9 +103,9 @@ export default function JobFeed({ user, onLogout }) {
 
       let q;
       if (pageParam) {
-        q = query(jobsRef, orderBy('createdAt', 'desc'), startAfter(pageParam), limit(batchSize));
+        q = query(jobsRef, orderBy('createdAt', 'asc'), startAfter(pageParam), limit(batchSize));
       } else {
-        q = query(jobsRef, orderBy('createdAt', 'desc'), limit(batchSize));
+        q = query(jobsRef, orderBy('createdAt', 'asc'), limit(batchSize));
       }
 
       const snapshot = await getDocs(q);
