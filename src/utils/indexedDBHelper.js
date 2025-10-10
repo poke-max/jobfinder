@@ -19,7 +19,7 @@ const openDB = () => {
   });
 };
 
-export const saveProgress = async (userId, jobId, index) => {
+export const saveProgress = async (userId, jobId, index,jobCreatedAt ) => {
   const db = await openDB();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
@@ -28,7 +28,8 @@ export const saveProgress = async (userId, jobId, index) => {
     userId,
     lastJobId: jobId,
     lastIndex: index,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    jobCreatedAt  // ← NUEVO CAMPO
   });
   
   return tx.complete;

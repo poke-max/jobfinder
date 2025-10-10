@@ -250,17 +250,18 @@ export default function JobFeed({ user, onLogout }) {
     saveTimerRef.current = setTimeout(async () => {
       try {
         // Guardar en IndexedDB (inmediato)
-        await saveProgress(userId, jobId, index);
+        await saveProgress(userId, jobId, index, currentJob?.createdAt); // ← Pasar createdAt
         lastSavedIndexRef.current = index;
 
         // Guardar en Firestore cada 10 slides (backup)
-        if (index % 10 === 0) {
+        if (index % 1 === 0) {
           const userDocRef = doc(db, 'users', userId);
           await setDoc(userDocRef, {
             lastViewedJob: {
               jobId,
               index,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              jobCreatedAt: currentJob?.createdAt || null  // ← NUEVO CAMPO
             }
           }, { merge: true });
         }
@@ -268,7 +269,7 @@ export default function JobFeed({ user, onLogout }) {
         console.error('Error saving progress:', error);
       }
     }, 1000); // Debounce de 1 segundo
-  }, [userId]);
+  }, [userId, jobs]);
 
   const handleSlideChange = useCallback((swiper) => {
     if (isRestoringRef.current) return; // No procesar durante restauración
@@ -487,36 +488,44 @@ export default function JobFeed({ user, onLogout }) {
   }, [jobs.length, userId]); // Dependencias mínimas
 
   // Guardar progreso al cerrar/salir
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (jobs[currentIndex]) {
-        try {
-          // Guardar final en ambos
-          await saveProgress(userId, jobs[currentIndex].id, currentIndex);
-
-          const userDocRef = doc(db, 'users', userId);
-          await setDoc(userDocRef, {
-            lastViewedJob: {
-              jobId: jobs[currentIndex].id,
-              index: currentIndex,
-              timestamp: Date.now()
-            }
-          }, { merge: true });
-        } catch (error) {
-          console.error('Error saving on exit:', error);
+useEffect(() => {
+  const saveCurrentProgress = async () => {
+    if (jobs[currentIndex]) {
+      const currentJob = jobs[currentIndex];
+      await saveProgress(userId, currentJob.id, currentIndex, currentJob.createdAt);
+      
+      const userDocRef = doc(db, 'users', userId);
+      await setDoc(userDocRef, {
+        lastViewedJob: {
+          jobId: currentJob.id,
+          index: currentIndex,
+          timestamp: Date.now(),
+          jobCreatedAt: currentJob.createdAt || null
         }
-      }
-    };
+      }, { merge: true });
+    }
+  };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  // Para móviles (más confiable)
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      saveCurrentProgress();
+    }
+  };
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [currentIndex, jobs, userId]);
+  // Para desktop (backup)
+  const handleBeforeUnload = () => {
+    saveCurrentProgress();
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
+}, [currentIndex, jobs, userId]);
 
   // ==================== RENDER ====================
   if (!user) {
