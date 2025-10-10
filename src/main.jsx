@@ -3,8 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import './index.css'
+import './App.css'
 import App from './App.jsx'
 import {ImageContainer} from './ImageContainer'
+import './styles/search.css'
+import './styles/job-search.css'
+
 
 // Crear instancia de QueryClient con configuración optimizada
 const queryClient = new QueryClient({

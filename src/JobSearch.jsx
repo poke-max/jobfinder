@@ -228,7 +228,7 @@ export default function JobSearch({
           className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-all"
           aria-label="Cerrar"
         >
-          <ChevronLeft  strokeWidth={1.5} className="w-7 h-7 text-black" />
+          <ChevronLeft strokeWidth={1.5} className="w-7 h-7 text-black" />
         </button>
 
         <JobCard
@@ -244,15 +244,15 @@ export default function JobSearch({
   }
 
   return (
-    <div className={`fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto animate-fadeIn pb-20`}>
+    <div className="modal-container">
       {/* Header */}
-      <div className="sticky top-0 bg-bg border-b border-gray-200 p-1 z-10 ">
+      <div className="header">
         <div className="flex items-center gap-3 mb-4">
-            <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
-              <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
-            </button>
+          <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
+            <ChevronLeft strokeWidth={1.5} className="back-button" />
+          </button>
 
-          <h2 className="flex-1 text-sm font-semibold text-gray-500 text-center">{config.title}</h2>
+          <h2 className="section-title">{config.title}</h2>
 
           {/* Botones de vista */}
           <div className="flex items-center gap-2">
@@ -260,18 +260,18 @@ export default function JobSearch({
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-1 rounded transition-all ${viewMode === 'list'
-                    ? 'bg-white shadow-sm text-black'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white shadow-sm text-black'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
                 aria-label="Vista de lista"
               >
-                <List className="w-3 h-3" />
+                <List className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1 rounded transition-all ${viewMode === 'grid'
-                    ? 'bg-white shadow-sm text-black'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white shadow-sm text-black'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
                 aria-label="Vista de cuadrícula"
               >
@@ -282,26 +282,26 @@ export default function JobSearch({
         </div>
 
         {/* Search Bar */}
-        <div className="relative max-w-4xl mx-auto">
+        <div className="search-container">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={mode === 'search' ? 'Puesto, empresa, o habilidad...' : 'Buscar...'}
-            className="w-full h-12 pl-12 pr-12 bg-gray-100 rounded-xl hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-gray-300 text-gray-700"
+            className="search-input"
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          <Search className="search-icon" />
+          <div className="search-actions">
             {loading && (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+              <div className="search-spinner"></div>
             )}
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="search-clear-button"
                 aria-label="Limpiar búsqueda"
               >
-                <X className="w-4 h-4" />
+                <X className="search-clear-icon" />
               </button>
             )}
           </div>

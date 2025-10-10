@@ -329,15 +329,18 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex items-center justify-center animate-fadeIn">
+    <div className="modal-container">
       <div className="bg-white w-full pb-20 h-full max-w-2xl overflow-hidden shadow-2xl animate-slideUp">
         {/* Header */}
-        <div className="flex items-center gap-3 ">
-          <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
-            <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
-          </button>
-          <h2 className="flex-1 text-sm font-bold text-gray-700 text-center">Mi Perfil</h2>
-          <div className="w-11 h-1"></div>
+        <div className="header">
+          <div className="flex items-center gap-3 ">
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+              <ChevronLeft strokeWidth={1.5} className="back-button" />
+            </button>
+            <h2 className="section-title">Mi perfil</h2>
+
+            <div className="w-11 h-1"></div>
+          </div>
         </div>
 
         <div className="p-2 overflow-y-auto max-h-[calc(90vh-100px)]">
@@ -497,7 +500,7 @@ export default function UserProfile({ user, onClose, onMyPublications }) {
             ) : (
               <label className="flex items-center justify-between cursor-pointer">
                 <div className="flex items-center gap-3">
-         
+
                   <div>
                     <h4 className="font-semibold text-sm text-gray-800">Curriculum Vitae</h4>
                     <p className="text-xs text-gray-500">Sube tu CV en formato PDF</p>

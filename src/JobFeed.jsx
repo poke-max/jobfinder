@@ -609,61 +609,61 @@ export default function JobFeed({ user, onLogout }) {
       {!showMap && (
 
 
-        <div className="fixed top-0 left-0 right-0 flex items-center justify-between px-2 pt-3 z-1">
-          {showSearchBar ? (
-            <div className="flex items-center gap-3 w-full">
-              <div className="relative flex-1">
-                <style>{`
-                  .search-input::placeholder {
-                    color: ${headerTextColor};
-                    opacity: 0.6;
-                  }
-                `}</style>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar empleos..."
-                  style={{ color: headerTextColor }}
-                  className="search-input w-full h-12 pl-12 pr-12 bg-transparent backdrop-blur-md rounded-full hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60 border border-white/30"
-                  autoFocus
-                />
-                <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
-                  style={{ color: headerTextColor }}
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  {isSearching && (
-                    <div
-                      className="animate-spin rounded-full h-5 w-5 border-b-2"
-                      style={{ borderColor: headerTextColor }}
-                    ></div>
-                  )}
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setShowSearchBar(false);
-                    }}
-                    className="hover:opacity-70 transition-opacity"
-                    aria-label="Cerrar búsqueda"
-                  >
-                    <X className="w-4 h-4" style={{ color: headerTextColor }} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between w-full">
-              <h2 style={{ color: headerTextColor }} className="text-md font-semibold">AppName</h2>
-              <button
-                onClick={() => setShowSearchBar(true)}
-                className="hover:bg-white/10 rounded-full p-2 transition-colors"
-              >
-                <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
-              </button>
-            </div>
+<div className="job-search-header">
+  {showSearchBar ? (
+    <div className="job-search-wrapper">
+      <div className="job-search-input-container">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Buscar empleos..."
+          style={{ 
+            color: headerTextColor,
+            '--placeholder-color': headerTextColor,
+            '--placeholder-opacity': 0.6
+          }}
+          className="job-search-input"
+          autoFocus
+        />
+        <Search
+          className="job-search-icon"
+          style={{ color: headerTextColor }}
+        />
+        <div className="job-search-actions">
+          {isSearching && (
+            <div
+              className="job-search-spinner"
+              style={{ borderBottomColor: headerTextColor }}
+            ></div>
           )}
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setShowSearchBar(false);
+            }}
+            className="job-search-close"
+            aria-label="Cerrar búsqueda"
+          >
+            <X style={{ color: headerTextColor }} />
+          </button>
         </div>
+      </div>
+    </div>
+  ) : (
+    <div className="job-search-collapsed">
+      <h2 style={{ color: headerTextColor }} className="job-search-title">
+        AppName
+      </h2>
+      <button
+        onClick={() => setShowSearchBar(true)}
+        className="job-search-toggle"
+      >
+        <Search size={24} strokeWidth={1.5} style={{ color: headerTextColor }} />
+      </button>
+    </div>
+  )}
+</div>
       )}
     </>
   );

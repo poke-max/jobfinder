@@ -3,11 +3,11 @@ import { FaMapMarkerAlt, FaDollarSign, FaClock, FaBriefcase } from 'react-icons/
 
 export default function JobListItem({ job, formatTimeAgo, onClick, showPublisherBadge }) {
   const isNew = formatTimeAgo(job.createdAt) === 'Hace menos de 1h';
-  const imageUrl = job.url || job.flyerImage || job.image;
+  const imageUrl = job.url || job.flyerImage || job.image  || job.images;
   
   return (
     <div 
-      className="mb-3 bg-white border border-gray-200 px-2 hover:shadow-md transition cursor-pointer overflow-hidden"
+      className="mb-3  bg-white border border-gray-200 px-2 hover:shadow-md transition cursor-pointer overflow-hidden"
       onClick={onClick}
     >
       <div className="flex gap-3 p-0">
@@ -25,7 +25,7 @@ export default function JobListItem({ job, formatTimeAgo, onClick, showPublisher
             />
           ) : null}
           {/* Placeholder cuando no hay imagen */}
-          <div className={`${imageUrl ? 'hidden' : 'flex'} w-16 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 items-center justify-center`}>
+          <div className={`${imageUrl ? 'hidden' : 'flex'} w-16 h-16  bg-gradient-to-br from-gray-100 to-gray-200 items-center justify-center`}>
             <FaBriefcase className="w-6 h-6 text-gray-400" />
           </div>
         </div>
@@ -33,10 +33,10 @@ export default function JobListItem({ job, formatTimeAgo, onClick, showPublisher
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-800 truncate">
+              <h3 className="font-semibold text-sm text-gray-800 truncate">
                 {job.title || 'Sin título'}
               </h3>
-              <p className="text-sm text-gray-600 truncate">
+              <p className="text-xs text-gray-600 truncate">
                 {job.company || 'Empresa no especificada'}
               </p>
             </div>

@@ -144,19 +144,19 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-const handleImageSelect = (e) => {
+  const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     const remainingSlots = 4 - imageFiles.length;
-    
+
     // Validar que sean imágenes
     const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const invalidFiles = files.filter(file => !validImageTypes.includes(file.type));
-    
+
     if (invalidFiles.length > 0) {
       setError('El archivo seleccionado no es una imagen. Por favor selecciona archivos JPG, PNG, GIF o WEBP.');
       return;
     }
-    
+
     const filesToAdd = files.slice(0, remainingSlots);
 
     if (filesToAdd.length > 0) {
@@ -286,387 +286,386 @@ const handleImageSelect = (e) => {
   }
 
   return (
-    <div className="fixed bg-white inset-0 z-50 mx-auto max-w-4xl overflow-y-auto">
+    <div className="modal-container">
 
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-1 z-10 shadow-sm ">
-          <div className="flex items-center gap-3 ">
-            <button onClick={onClose} className="p-2  hover:bg-gray-100 rounded-full transition">
-              <ChevronLeft strokeWidth={1.5} className="w-5 h-5 text-gray-600" />
+      {/* Header */}
+      <div className="header">
+        <div className="flex items-center gap-3 ">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+            <ChevronLeft strokeWidth={1.5} className="back-button" />
+          </button>
+          <h2 className="section-title">Publicar</h2>
+
+          <div className="w-11 h-1"></div>
+        </div>
+      </div>
+
+
+
+      <div className="p-3 space-y-6 overflow-y-auto">
+        {/* Error Message */}
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3 animate-fadeIn">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-800 mb-1">Error al publicar</h3>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="flex-shrink-0 text-red-500 hover:text-red-700"
+            >
+              <X className="w-4 h-4" strokeWidth={1.5} />
             </button>
-            <h2 className="flex-1 text-sm font-bold text-gray-500 text-center">Publicar</h2>
-            <div className="w-11 h-1"></div>
           </div>
+        )}
 
-          
+        {/* Upload Progress */}
+        {loading && uploadProgress > 0 && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-blue-800">Subiendo imágenes...</span>
+              <span className="text-sm text-blue-600">{uploadProgress}%</span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Image Upload */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Imágenes del Trabajo (Hasta 4)
+          </label>
+
+          <div className="grid grid-cols-2 gap-4">
+            {imagePreviews.map((preview, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={preview}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-40 object-cover rounded-xl border-2 border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-lg"
+                >
+                  <X className="w-3 h-3" strokeWidth={1.5} />
+                </button>
+                <div className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-60 text-white text-xs rounded">
+                  {index + 1}/4
+                </div>
+              </div>
+            ))}
+
+            {imagePreviews.length < 4 && (
+              <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-600 cursor-pointer transition bg-gray-50">
+                <Image className="w-8 h-8 text-gray-400 mb-2" strokeWidth={1.5} />
+                <span className="text-xs text-gray-500 text-center px-2">
+                  {imagePreviews.length === 0 ? 'Agregar imágenes' : 'Agregar más'}
+                </span>
+                <span className="text-xs text-gray-400 mt-1">
+                  {imagePreviews.length}/4
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
         </div>
 
-
-
-        <div className="p-3 space-y-6 overflow-y-auto">
-          {/* Error Message */}
-          {error && (
-            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3 animate-fadeIn">
-              <div className="flex-shrink-0 mt-0.5">
-                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-red-800 mb-1">Error al publicar</h3>
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-              <button
-                onClick={() => setError(null)}
-                className="flex-shrink-0 text-red-500 hover:text-red-700"
-              >
-                <X className="w-4 h-4" strokeWidth={1.5} />
-              </button>
-            </div>
-          )}
-
-          {/* Upload Progress */}
-          {loading && uploadProgress > 0 && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-blue-800">Subiendo imágenes...</span>
-                <span className="text-sm text-blue-600">{uploadProgress}%</span>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Imágenes del Trabajo (Hasta 4)
-            </label>
-
-            <div className="grid grid-cols-2 gap-4">
-              {imagePreviews.map((preview, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-40 object-cover rounded-xl border-2 border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-lg"
-                  >
-                    <X className="w-3 h-3" strokeWidth={1.5} />
-                  </button>
-                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-60 text-white text-xs rounded">
-                    {index + 1}/4
-                  </div>
-                </div>
-              ))}
-
-              {imagePreviews.length < 4 && (
-                <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-600 cursor-pointer transition bg-gray-50">
-                  <Image className="w-8 h-8 text-gray-400 mb-2" strokeWidth={1.5} />
-                  <span className="text-xs text-gray-500 text-center px-2">
-                    {imagePreviews.length === 0 ? 'Agregar imágenes' : 'Agregar más'}
-                  </span>
-                  <span className="text-xs text-gray-400 mt-1">
-                    {imagePreviews.length}/4
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-          </div>
-
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <Briefcase className="text-blue-600 w-5 h-5 " strokeWidth={1.5} />
-                Título del Puesto *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="Ej: Desarrollador Full Stack"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <Building className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Empresa
-              </label>
-              <input
-                type="text"
-                value={formData.company}
-                onChange={(e) => handleInputChange('company', e.target.value)}
-                placeholder="Nombre de la empresa"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Description */}
+        {/* Basic Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <FileText className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-              Descripción *
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describe el puesto y responsabilidades..."
-              rows="3"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-
-          {/* Requirements */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <FileText className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-              Requisitos
-            </label>
-            <textarea
-              value={formData.requeriments}
-              onChange={(e) => handleInputChange('requeriments', e.target.value)}
-              placeholder="Lista los requisitos y habilidades necesarias..."
-              rows="3"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-
-          {/* Location with Map */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <MapPin className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-              Ubicación en el Mapa
-            </label>
-
-            <button
-              type="button"
-              onClick={() => setShowMap(!showMap)}
-              className="w-full px-4 py-3 bg-blue-100 border-2 border-blue-600 rounded-xl hover:bg-primary hover:text-white transition font-semibold text-blue-600 flex items-center justify-center gap-2"
-            >
-              <MapPin strokeWidth={1.5} />
-              {formData.ubication.lat !== -25.2637 ? 'Cambiar Ubicación' : 'Seleccionar Ubicación'}
-            </button>
-
-            {formData.ubication.lat !== -25.2637 && (
-              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
-                <span className="font-semibold text-green-800">Ubicación seleccionada:</span>
-                <p className="text-green-700">Lat: {formData.ubication.lat.toFixed(6)}</p>
-                <p className="text-green-700">Lng: {formData.ubication.lng.toFixed(6)}</p>
-              </div>
-            )}
-
-            {showMap && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn shadow-2xl">
-                  <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-gray-800">Seleccionar Ubicación</h3>
-                    <button
-                      onClick={() => setShowMap(false)}
-                      className="p-2 hover:bg-gray-100 rounded-full transition"
-                    >
-                      <X className="w-5 h-5 text-gray-600" strokeWidth={1.5} />
-                    </button>
-                  </div>
-
-                  <div className="relative">
-                    <div ref={mapContainer} className="h-[60vh] w-full" />
-
-                    <button
-                      onClick={handleMyLocation}
-                      className="absolute bottom-6 right-6 p-4 bg-white rounded-full shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110 border-2 border-blue-600"
-                      title="Mi ubicación"
-                    >
-                      <Crosshair className="w-6 h-6" strokeWidth={1.5} />
-                    </button>
-                  </div>
-
-                  <div className="p-4 bg-gray-50 border-t border-gray-200">
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => setShowMap(false)}
-                        className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={confirmLocation}
-                        className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg"
-                      >
-                        Confirmar Ubicación
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* City and Address */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <MapPin className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Ciudad
-              </label>
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                placeholder="Ej: Asunción"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <MapPin className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Dirección
-              </label>
-              <input
-                type="text"
-                value={formData.direction}
-                onChange={(e) => handleInputChange('direction', e.target.value)}
-                placeholder="Dirección específica"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Salary and Vacancies */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <DollarSign className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Salario
-              </label>
-              <input
-                type="text"
-                value={formData.salary_range}
-                onChange={(e) => handleInputChange('salary_range', e.target.value)}
-                placeholder="Ej: Mínimo vigente"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <Users className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Vacantes
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.vacancies}
-                onChange={(e) => handleInputChange('vacancies', parseInt(e.target.value) || 1)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <Mail className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Email de Contacto
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="contacto@empresa.com"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <Phone className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-                Teléfono
-              </label>
-              <input
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                placeholder="+595 xxx xxx xxx"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Website */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <Globe className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-              Sitio Web
-            </label>
-            <input
-              type="url"
-              value={formData.website}
-              onChange={(e) => handleInputChange('website', e.target.value)}
-              placeholder="https://www.empresa.com"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Position Type */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <Briefcase className="text-blue-600 w-5 h-5" strokeWidth={1.5} />
-              Posición
+              <Briefcase className="icon-data " strokeWidth={1.5} />
+              Título del Puesto *
             </label>
             <input
               type="text"
-              value={formData.position}
-              onChange={(e) => handleInputChange('position', e.target.value)}
-              placeholder="Ej: Vendedor, Gerente, etc."
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              placeholder="Ej: Desarrollador Full Stack"
+              className="form-input"
             />
           </div>
 
-          {/* Submit Button */}
-          <div className="pt-4">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full py-4 bg-primary text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {uploadProgress > 0 ? `Subiendo imágenes... ${uploadProgress}%` : 'Publicando...'}
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-5 h-5" strokeWidth={1.5} />
-                  Publicar Trabajo
-                </>
-              )}
-            </button>
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <Building className="icon-data" />
+              Empresa
+            </label>
+            <input
+              type="text"
+              value={formData.company}
+              onChange={(e) => handleInputChange('company', e.target.value)}
+              placeholder="Nombre de la empresa"
+              className="form-input"
+            />
           </div>
         </div>
-        <div className="flex-shrink-0  z-90 h-[4em] lg:h-[0em] z-0"></div>
+
+        {/* Description */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <FileText className="icon-data" />
+            Descripción *
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            placeholder="Describe el puesto y responsabilidades..."
+            rows="3"
+            className="form-input"
+          />
+        </div>
+
+        {/* Requirements */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <FileText className="icon-data" />
+            Requisitos
+          </label>
+          <textarea
+            value={formData.requeriments}
+            onChange={(e) => handleInputChange('requeriments', e.target.value)}
+            placeholder="Lista los requisitos y habilidades necesarias..."
+            rows="3"
+            className="form-input"
+          />
+        </div>
+
+        {/* Location with Map */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <MapPin className="icon-data" />
+            Ubicación en el Mapa
+          </label>
+
+          <button
+            type="button"
+            onClick={() => setShowMap(!showMap)}
+            className="w-full px-4 py-3 bg-blue-100 border-2 border-blue-600 rounded-xl hover:bg-primary hover:text-white transition font-semibold text-blue-600 flex items-center justify-center gap-2"
+          >
+            <MapPin strokeWidth={1.5} />
+            {formData.ubication.lat !== -25.2637 ? 'Cambiar Ubicación' : 'Seleccionar Ubicación'}
+          </button>
+
+          {formData.ubication.lat !== -25.2637 && (
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+              <span className="font-semibold text-green-800">Ubicación seleccionada:</span>
+              <p className="text-green-700">Lat: {formData.ubication.lat.toFixed(6)}</p>
+              <p className="text-green-700">Lng: {formData.ubication.lng.toFixed(6)}</p>
+            </div>
+          )}
+
+          {showMap && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn shadow-2xl">
+                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-gray-800">Seleccionar Ubicación</h3>
+                  <button
+                    onClick={() => setShowMap(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition"
+                  >
+                    <X className="w-5 h-5 text-gray-600" strokeWidth={1.5} />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <div ref={mapContainer} className="h-[60vh] w-full" />
+
+                  <button
+                    onClick={handleMyLocation}
+                    className="absolute bottom-6 right-6 p-4 bg-white rounded-full shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110 border-2 border-blue-600"
+                    title="Mi ubicación"
+                  >
+                    <Crosshair className="w-6 h-6" strokeWidth={1.5} />
+                  </button>
+                </div>
+
+                <div className="p-4 bg-gray-50 border-t border-gray-200">
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowMap(false)}
+                      className="flex-1 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={confirmLocation}
+                      className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg"
+                    >
+                      Confirmar Ubicación
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* City and Address */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <MapPin className="icon-data" />
+              Ciudad
+            </label>
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) => handleInputChange('city', e.target.value)}
+              placeholder="Ej: Asunción"
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <MapPin className="icon-data" />
+              Dirección
+            </label>
+            <input
+              type="text"
+              value={formData.direction}
+              onChange={(e) => handleInputChange('direction', e.target.value)}
+              placeholder="Dirección específica"
+              className="form-input"
+            />
+          </div>
+        </div>
+
+        {/* Salary and Vacancies */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <DollarSign className="icon-data" />
+              Salario
+            </label>
+            <input
+              type="text"
+              value={formData.salary_range}
+              onChange={(e) => handleInputChange('salary_range', e.target.value)}
+              placeholder="Ej: Mínimo vigente"
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <Users className="icon-data" />
+              Vacantes
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={formData.vacancies}
+              onChange={(e) => handleInputChange('vacancies', parseInt(e.target.value) || 1)}
+              className="form-input"
+            />
+          </div>
+        </div>
+
+        {/* Contact Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <Mail className="icon-data" />
+              Email de Contacto
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              placeholder="contacto@empresa.com"
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <Phone className="icon-data" />
+              Teléfono
+            </label>
+            <input
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+              placeholder="+595 xxx xxx xxx"
+              className="form-input"
+            />
+          </div>
+        </div>
+
+        {/* Website */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <Globe className="icon-data" />
+            Sitio Web
+          </label>
+          <input
+            type="url"
+            value={formData.website}
+            onChange={(e) => handleInputChange('website', e.target.value)}
+            placeholder="https://www.empresa.com"
+            className="form-input"
+          />
+        </div>
+
+        {/* Position Type */}
+        <div>
+          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <Briefcase className="icon-data" />
+            Posición
+          </label>
+          <input
+            type="text"
+            value={formData.position}
+            onChange={(e) => handleInputChange('position', e.target.value)}
+            placeholder="Ej: Vendedor, Gerente, etc."
+            className="form-input"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="submit-container">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="submit-button"
+          >
+            {loading ? (
+              <>
+                <div className="submit-spinner"></div>
+                {uploadProgress > 0 ? `Subiendo imágenes... ${uploadProgress}%` : 'Publicando...'}
+              </>
+            ) : (
+              <>
+                <CheckCircle className="submit-icon" strokeWidth={1.5} />
+                Publicar Trabajo
+              </>
+            )}
+          </button>
+        </div>
       </div>
- 
+     
+    </div>
+
   );
 }
