@@ -99,7 +99,7 @@ const {
   queryKey: ['jobs', userId], // ← Agregar userId como dependencia
   queryFn: async ({ pageParam = null }) => {
     const jobsRef = collection(db, 'jobs');
-    const batchSize = 50;
+    const batchSize = 10;
 
     let q;
     
@@ -177,19 +177,66 @@ if (lastProgress?.jobCreatedAt) {
 
   // ==================== FETCH USER DATA ====================
   const { data: userData } = useQuery({
-    queryKey: ['userData', userId],
-    queryFn: async () => {
-      if (!userId) return { saved: [] };
-      const userDocRef = doc(db, 'users', userId);
-      const userDoc = await getDoc(userDocRef);
-      return userDoc.exists() ? { saved: userDoc.data().savedJobs || [] } : { saved: [] };
-    },
-    enabled: !!userId,
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  queryKey: ['userData', userId],
+  queryFn: async () => {
+    if (!userId) return { saved: [] };
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    
+    const result = userDoc.exists() 
+      ? { saved: userDoc.data().savedJobs || [] } 
+      : { saved: [] };
+    
+    console.log('Datos obtenidos de Firestore:', result); // ✅ Ver datos de Firestore
+    return result;
+  },
+  enabled: !!userId,
+  staleTime: Infinity,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+});
 
+console.log('userData final:', userData); // ✅ Ver el resultado de la query
+
+  // ==================== FETCH JOB CREATORS DATA ====================
+// ==================== FETCH JOB CREATORS DATA ====================
+// ==================== FETCH JOB CREATORS DATA ====================
+const { data: jobCreatorsData, isLoading: isLoadingCreators } = useQuery({
+  queryKey: ['jobCreators', jobs.map(j => j.userId)], // ← Cambiar a userId
+  queryFn: async () => {
+    if (!jobs.length) return {};
+    
+    console.log('🔍 Jobs disponibles:', jobs.length);
+    
+    // Obtener IDs únicos de creadores
+    const creatorIds = [...new Set(jobs.map(j => j.userId).filter(Boolean))]; // ← Cambiar a userId
+    console.log('👥 IDs de creadores únicos:', creatorIds);
+    
+    // Fetch en batch
+    const creatorsMap = {};
+    await Promise.all(
+      creatorIds.map(async (creatorId) => {
+        const userDocRef = doc(db, 'users', creatorId);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          creatorsMap[creatorId] = userDoc.data();
+          console.log(`✅ Usuario ${creatorId}:`, userDoc.data());
+        } else {
+          console.log(`❌ Usuario ${creatorId} no encontrado`);
+        }
+      })
+    );
+    
+    console.log('📦 Mapa completo de creadores:', creatorsMap);
+    return creatorsMap;
+  },
+  enabled: jobs.length > 0,
+  staleTime: 5 * 60 * 1000,
+});
+
+console.log('👥 jobCreatorsData:', jobCreatorsData);
+console.log('⏳ isLoadingCreators:', isLoadingCreators);
+console.log('📝 Primer job:', jobs[0]);
   const savedJobs = useMemo(() =>
     new Set(userData?.saved || []),
     [userData?.saved]
@@ -359,7 +406,7 @@ if (lastProgress?.jobCreatedAt) {
     }
 
     // Prefetch más agresivo
-    if (newIndex >= jobs.length - 30 && hasNextPage && !isFetchingNextPage) {
+    if (newIndex >= jobs.length - 8 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
 
@@ -635,6 +682,7 @@ if (lastProgress?.jobCreatedAt) {
                       isSaved={isSavedJob}
                       justSaved={justSavedJob}
                       showDetails={showDetails[job.id]}
+                       userData={jobCreatorsData?.[job.userId]} // ← Cambiar a userId
                       onToggleDetails={() =>
                         setShowDetails(prev => ({ ...prev, [job.id]: !prev[job.id] }))
                       }
@@ -674,10 +722,10 @@ if (lastProgress?.jobCreatedAt) {
           </div>
         )}
 
-        {!hasNextPage && filteredJobs.length > 0 && !searchQuery && (
+       {currentIndex === filteredJobs.length - 1 && !hasNextPage && !searchQuery && (
           <div className="absolute bottom-24 left-0 right-0 flex justify-center z-50 pointer-events-none">
             <div className="bg-gray-700 text-white px-6 py-3 rounded-full shadow-lg">
-              <span className="text-sm">Has visto todos los trabajos disponibles</span>
+              <span className="text-sm">Has llegado al final</span>
             </div>
           </div>
         )}

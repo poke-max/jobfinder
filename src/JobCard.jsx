@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Briefcase, Bookmark, X, Check, DollarSign, Clock, ChevronDown, MapPin, MessageCircle, GalleryHorizontalEnd, MoreHorizontal, Navigation, Star, Plane, Send, Phone } from 'lucide-react';
+import {
+  Info,
+  Briefcase,
+  Bookmark,
+  X, Check,
+  DollarSign,
+  Clock, ChevronDown,
+  MapPin, MessageCircle, GalleryHorizontalEnd,
+  MoreHorizontal, Navigation, Star, Plane, Send,
+  Phone, Laptop, Banknote, MapPinned, Copy
+} from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
@@ -7,13 +17,14 @@ import ColorThief from 'colorthief';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'react-photo-view/dist/react-photo-view.css';
-
+import { Mail, Globe, Building2, Users, Wallet, FileText } from 'lucide-react';
 import JobMapView from './JobMapView';
 import JobContactView from './JobContactView';
 import JobDetailView from './JobDetailView';
 
 export default function JobCard({
   job,
+  userData,
   isSaved,
   justSaved,
   showDetails,
@@ -33,7 +44,7 @@ export default function JobCard({
   const swiperRef = useRef(null);
   const colorThiefRef = useRef(new ColorThief());
   const parentSwiperEnabledRef = useRef(null);
-    const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   // Preparar todas las imágenes
   const allImages = job.images && job.images.length > 0
     ? job.images
@@ -61,29 +72,29 @@ export default function JobCard({
 
   const [isAnimating, setIsAnimating] = useState(false);
 
-const handleSave = () => {
-  if (!isSaved) {
-    setIsAnimating(true);
-    
-    // Sonido de "pop" o "click"
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
-    audio.volume = 0.3;
-    audio.play().catch(err => console.log('Error reproduciendo audio:', err));
-    
-    setTimeout(() => setIsAnimating(false), 500);
-  }
-  onSave();
-};
+  const handleSave = () => {
+    if (!isSaved) {
+      setIsAnimating(true);
+
+      // Sonido de "pop" o "click"
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(err => console.log('Error reproduciendo audio:', err));
+
+      setTimeout(() => setIsAnimating(false), 500);
+    }
+    onSave();
+  };
 
   // Cargar el color de la primera imagen disponible
-// Cargar el color de la primera imagen disponible con reintentos
+  // Cargar el color de la primera imagen disponible con reintentos
   useEffect(() => {
     if (allImages.length > 0) {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
       img.src = allImages[0];
       img.onload = () => extractDominantColor(img);
-      
+
       // Si falla, reintentar cuando vuelva la conexión
       img.onerror = () => {
         const retryLoad = () => {
@@ -92,14 +103,14 @@ const handleSave = () => {
           retryImg.src = allImages[0];
           retryImg.onload = () => extractDominantColor(retryImg);
         };
-        
+
         // Escuchar evento de conexión restaurada
         const handleOnline = () => {
           retryLoad();
           window.removeEventListener('online', handleOnline);
         };
         window.addEventListener('online', handleOnline);
-        
+
         // También reintentar después de 3 segundos por si acaso
         setTimeout(retryLoad, 3000);
       };
@@ -283,7 +294,7 @@ const handleSave = () => {
                   fill={activeModal === 'map' ? "currentColor" : "none"}
                 />
               </button>
-              <button onClick={() => {
+              {/* <button onClick={() => {
                 setActiveModal(activeModal === 'contact' ? 'gallery' : 'contact')
                 setShowMap(false);
 
@@ -294,7 +305,7 @@ const handleSave = () => {
                   className="text-black"
                   fill={activeModal === 'contact' ? "currentColor" : "none"}
                 />
-              </button>
+              </button> */}
               <button onClick={() => {
                 setIsInfoExpanded(!isInfoExpanded);
                 setShowMap(false);
@@ -308,34 +319,104 @@ const handleSave = () => {
                 )}
               </button>
             </div>
-<button 
-  onClick={handleSave}
-  className="transition-transform hover:scale-105"
->
-  <Bookmark
-    size={26}
-    strokeWidth={1.5}
-    className={`${
-      isSaved ? "text-yellow-400" : "text-black"
-    } ${isAnimating ? "animate-shake-scale" : ""}`}
-    fill={isSaved ? "currentColor" : "none"}
-  />
-</button>
+            <button
+              onClick={handleSave}
+              className="transition-transform hover:scale-105"
+            >
+              <Bookmark
+                size={26}
+                strokeWidth={1.5}
+                className={`${isSaved ? "text-yellow-400" : "text-black"
+                  } ${isAnimating ? "animate-shake-scale" : ""}`}
+                fill={isSaved ? "currentColor" : "none"}
+              />
+            </button>
           </div>
 
           {/* Información del trabajo */}
-          <div className="mt-3 flex flex-col">
-            {job.title && (
-              <h1 className="text-black text-md font-semibold">{job.title}</h1>
-            )}
-            {job.description && (
-              <p className="text-gray-700 text-sm mt-0">{job.description}</p>
-            )}
+
+          <div className="mt-1 flex flex-col">
+            <div className="flex flex-row items-center gap-1">
+              {userData?.customPhotoURL && (
+                <img
+                  src={userData.customPhotoURL}
+                  alt={userData.displayName || 'Usuario'}
+                  className="w-3 h-3 rounded-full object-cover"
+                />
+              )}
+              {userData?.displayName && (
+                <>
+                <p className="text-gray-800 text-sm font-bold">{userData.displayName}</p>
+                <span className="text-gray-400 text-sm">•</span>
+                </>
+              )}
+              
+              {job.title && (
+                <h1 className="text-black text-md font-semibold">{job.title}</h1>
+              )}
+            </div>
+{job.description && (
+  <p className={`text-gray-700 text-sm mt-0 ${!isInfoExpanded ? 'line-clamp-3' : ''}`}>
+    {job.description}
+  </p>
+)}
+
+<div className='flex flex-col mt-2'>
             {job.city && (
               <div className="flex items-center gap-1 mt-1">
-                <MapPin size={12} strokeWidth={1.5} className="text-gray-400" />
-                <p className="text-gray-600 text-sm">{job.city}</p>
+                <MapPin size={12} strokeWidth={1.5} className="text-gray-700" />
+                <p className="text-gray-700 text-xs">{job.city}</p>
               </div>
+            )}
+            {isInfoExpanded && (
+              <>
+                <div className="flex items-center gap-1 mt-1">
+                  <Laptop size={12} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-gray-700 text-xs">Remoto</p>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <Users size={12} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-gray-700 text-xs">2 vacantes</p>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <Banknote size={12} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-gray-700 text-xs">Salario mínimo</p>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <MapPinned size={12} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-gray-700 text-xs">Barrio Azucena, Las Residentas</p>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <FileText size={12} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-gray-700 text-xs">Experiencia en animales de granja, ganado, farmacos y medifinas.</p>
+                </div>
+
+               
+                  <div className="flex items-center gap-1 mt-1">
+                    <Phone size={12} strokeWidth={1.5} className="text-gray-700" />
+                    <p className="text-gray-700 text-xs">+595 9876554</p>
+                  </div>
+
+
+<div className='flex flex-row gap-2 mt-4 justify-end pr-4'>
+                  <a
+
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-8  h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2.5 rounded-full transition font-medium"
+                  >
+                  </a>
+                  <a
+
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-8 h-8 text-xs bg-cyan-600 hover:bg-emerald-700 text-white text-center py-2.5 rounded-full transition font-medium"
+                  >
+                  </a>
+           </div>
+
+
+              </>
             )}
             {job.createdAt && (
               <p className="text-gray-600 text-sm mt-3">
@@ -355,6 +436,9 @@ const handleSave = () => {
                 })()}
               </p>
             )}
+
+</div>
+
           </div>
         </div>
       </div>
