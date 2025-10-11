@@ -202,14 +202,14 @@ console.log('userData final:', userData); // ✅ Ver el resultado de la query
 // ==================== FETCH JOB CREATORS DATA ====================
 // ==================== FETCH JOB CREATORS DATA ====================
 const { data: jobCreatorsData, isLoading: isLoadingCreators } = useQuery({
-  queryKey: ['jobCreators', jobs.map(j => j.userId)], // ← Cambiar a userId
+  queryKey: ['jobCreators', jobs.map(j => j.createdBy)], // ← Cambiar a userId
   queryFn: async () => {
     if (!jobs.length) return {};
     
     console.log('🔍 Jobs disponibles:', jobs.length);
     
     // Obtener IDs únicos de creadores
-    const creatorIds = [...new Set(jobs.map(j => j.userId).filter(Boolean))]; // ← Cambiar a userId
+    const creatorIds = [...new Set(jobs.map(j => j.createdBy).filter(Boolean))]; // ← Cambiar a userId
     console.log('👥 IDs de creadores únicos:', creatorIds);
     
     // Fetch en batch
@@ -682,7 +682,7 @@ console.log('📝 Primer job:', jobs[0]);
                       isSaved={isSavedJob}
                       justSaved={justSavedJob}
                       showDetails={showDetails[job.id]}
-                       userData={jobCreatorsData?.[job.userId]} // ← Cambiar a userId
+                       userData={jobCreatorsData?.[job.createdBy]} // ✅ CORRECTO
                       onToggleDetails={() =>
                         setShowDetails(prev => ({ ...prev, [job.id]: !prev[job.id] }))
                       }

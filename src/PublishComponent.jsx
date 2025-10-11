@@ -277,7 +277,7 @@ export default function PublishComponent({ userId, onClose, onSuccess }) {
     return (
       <div className="fixed inset-0  z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center animate-fadeIn">
-          <FaCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h3 className="text-2xl font-bold text-gray-800 mb-2">¡Publicado!</h3>
           <p className="text-gray-600">Tu oferta de trabajo ha sido publicada exitosamente</p>
         </div>
