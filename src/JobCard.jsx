@@ -339,15 +339,15 @@ export default function JobCard({
             setIsInfoExpanded(!isInfoExpanded);
             setShowMap(false);
           }} className=" flex flex-col ">
-             <div className="flex flex-row items-center gap-1">
+             <div className="flex flex-row items-center gap-1 mt-1">
                 {userData?.customPhotoURL ? (
                   <img
                     src={userData.customPhotoURL}
                     alt={userData.displayName || 'Usuario'}
-                    className="w-3 h-3 rounded-full object-cover"
+                    className="w-4 h-4 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-3 h-3 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #FE9F92 0%, #F66F71 100%)' }}>
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #FE9F92 0%, #F66F71 100%)' }}>
                     <User className="w-3 h-3 text-white" strokeWidth={2.5} />
                   </div>
                 )}
